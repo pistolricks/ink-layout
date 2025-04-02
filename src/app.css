@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@import "./css/dnd.css";
 :root {
   --background-rgb: 214, 219, 220;
   --foreground-rgb: 0, 0, 0;
