@@ -25,7 +25,7 @@ import {
     Show, ValidComponent,
     VoidComponent
 } from "solid-js";
-import {createStore, produce} from "solid-js/store";
+import {createStore} from "solid-js/store";
 import Big, {div, e} from "big.js";
 import Icon from "~/components/ui/icon";
 import {classNames} from "~/lib/utils";
@@ -51,7 +51,6 @@ interface Base {
     type: "group" | "item";
     order: string;
     color?: string;
-    active: boolean;
 }
 
 interface Group extends Base {
@@ -102,7 +101,7 @@ const Item: VoidComponent<{
                             class="h-full w-full flex items-center justify-start relative p-1 border-b shadow dark:border-gray-800">
                             <div class=" flex items-center justify-center">
 
-                                <button type="button" onClick={props.remove}
+                                <Dialog.Trigger onClick={props.remove}
                                                 class="border border-red-400 m-1 w-4 h-4 rounded-full"/>
                                 <span class="font-sans uppercase text-base text-gray-500 dark:text-gray-400 truncate">
                                  {props.name}
@@ -130,27 +129,27 @@ const ItemOverlay: VoidComponent<{ name: string }> = (props) => {
     return (
         <div
             class={classNames(
-                 "border border-b",
+                "border border-b",
                 "sortable w-full",
                 "bg-white"
             )}
         >
-                <div class="rounded-t-lg h-full w-full flex items-start justify-start flex-col  rounded-xs">
-                    <div
-                        class="h-full w-full flex items-center justify-start relative p-1 border-b shadow dark:border-gray-800">
-                        <div class=" flex items-center justify-center">
+            <div class="rounded-t-lg h-full w-full flex items-start justify-start flex-col  rounded-xs">
+                <div
+                    class="h-full w-full flex items-center justify-start relative p-1 border-b shadow dark:border-gray-800">
+                    <div class=" flex items-center justify-center">
 
-                            <button type={'button'}
-                                            class="border border-red-400 m-1 w-4 h-4 rounded-full"/>
-                            <span class="font-sans uppercase text-base text-gray-500 dark:text-gray-400 truncate">
+                        <button type={'button'}
+                                class="border border-red-400 m-1 w-4 h-4 rounded-full"/>
+                        <span class="font-sans uppercase text-base text-gray-500 dark:text-gray-400 truncate">
                                  {props.name}
                             </span>
-                        </div>
-                        <div class="w-full flex items-center justify-center absolute left-0">
+                    </div>
+                    <div class="w-full flex items-center justify-center absolute left-0">
 
-                        </div>
                     </div>
                 </div>
+            </div>
             <div class="h-full min-h-[100px] w-full bg-blue-200">
                 <div class="p-4">
 
@@ -160,7 +159,7 @@ const ItemOverlay: VoidComponent<{ name: string }> = (props) => {
     );
 };
 
-const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]; hideHeader?: boolean; addItem: (e: any) => any; removeItem: (e: {id: Id, groupId: Id}) => any }> = (
+const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]; hideHeader?: boolean; addItem: (e: any) => any; removeItem: (e: any) => any }> = (
     props
 ) => {
     const sortable = createSortable(props.id, {type: "group"});
@@ -168,11 +167,9 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
     const items = () => props.items;
 
-    const [getItems, setItems] = createSignal(items());
 
-    const currentItems = createMemo(() => getItems())
 
-    const [getSortedItemIds, setSortedItemIds] = createSignal(currentItems().map((item) => item.id))
+    const [getSortedItemIds, setSortedItemIds] = createSignal(items().map((item) => item.id))
 
     const hideHeader = () => props.hideHeader ?? false;
 
@@ -183,29 +180,28 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
     const isSelected = createSelector<Id>(getSelectedId)
 
     const selectItem = (id: Id) => {
-
+        setSelectedId(id)
     }
 
-    const removeItem = (e: {id: Id, groupId: Id}) => {
-        setSelectedId(e.id)
-        if (isSelected(e.id)) {
-            props.removeItem({id: e.id, groupId: e.groupId})
+    const removeItem = (id: Id) => {
+        if (isSelected(id)) {
+            props.removeItem(id)
+            let arr = items().filter((item) => item.id !== id)
 
-            setItems(items())
         }
     }
 
 
     const handleNewItem = () => {
         let gh = props.id * 100;
-        let newA = (gh + currentItems()?.length + 1);
+        let newA = (gh + items()?.length + 1);
 
         let newItem = props.addItem({
             name: `Item ${newA}`,
             group: props.id
         })
         console.log("newItem", newItem)
-        setItems(items())
+        // setItems([...items(), newItem])
 
     }
 
@@ -213,24 +209,18 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
 
     const sortedItemIds = createMemo(() => {
-        setSortedItemIds(currentItems().map((item) => item.id))
+        setSortedItemIds(items().map((item) => item.id))
         return getSortedItemIds()
     })
 
 
 
+
     createEffect(() => {
         console.log("props.items", props.items)
-        console.log(getItems())
-        console.log(currentItems())
+        console.log(items())
         console.log(getSelectedId())
     })
-
-    onMount(() => {
-        setItems(items())
-    })
-
-
 
     return (
         <>
@@ -245,14 +235,11 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
             >
                 <div class="flex justify-center items-center">
                     <SortableProvider ids={sortedItemIds()}>
-                        <For<Item[]> each={currentItems()}>
+                        <For<Item[]> each={items()}>
                             {(item) => (
-                                <Show<boolean> when={item.active === true}>
-                                   <div class={'text-gray-600 h-12'}> {item.active}</div>
                                 <Item id={item.id} name={item.name} group={item.group}
-                                      remove={() => removeItem({ id: item.id, groupId: item.group })}
+                                      remove={() => selectItem(item.id)}
                                       hideHeader={hideHeader()}/>
-                                </Show>
                             )}
                         </For>
                     </SortableProvider>
@@ -267,7 +254,7 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
                                 <span>{props.name}</span>
                             </div>
                             <button as="button" onClick={handleNewItem}>
-                            <span><Icon name="Plus" class="p-1"/></span>
+                                <span><Icon name="Plus" class="p-1"/></span>
                             </button>
                         </div>
                     </div>
@@ -280,7 +267,7 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
                 <Dialog.Content
                     class="fixed left-1/2 top-1/2 z-50 min-w-80 -translate-x-1/2 -translate-y-1/2 rounded-lg border-2 border-corvu-400 bg-white px-6 py-5 data-open:animate-in data-open:fade-in-0% data-open:zoom-in-95% data-open:slide-in-from-top-10% data-closed:animate-out data-closed:fade-out-0% data-closed:zoom-out-95% data-closed:slide-out-to-top-10%">
 
-                    <RemoveItemInnerModal remove={() => removeItem({id: getSelectedId(), groupId: props.id })} id={props.id} />
+                    <RemoveItemInnerModal remove={() => removeItem(getSelectedId())} id={props.id} />
 
                 </Dialog.Content>
             </Dialog.Portal>
@@ -331,7 +318,6 @@ export const SortableSection: Component<{
             color: color,
             type: "group",
             order: getNextOrder(),
-            active: true
         });
     };
 
@@ -343,7 +329,6 @@ export const SortableSection: Component<{
             color: color,
             type: "item",
             order: getNextOrder(),
-            active: true
         });
 
         console.log(entities)
@@ -375,13 +360,13 @@ export const SortableSection: Component<{
 
     const groupItems = (groupId: Id) => {
 
-     let gi = sortByOrder(
+        let gi = sortByOrder(
             Object.values(entities).filter(
-                (entity) => entity.type === "item" && entity.group === groupId && entity.active
+                (entity) => entity.type === "item" && entity.group === groupId
             )
         ) as Item[];
 
-     console.log(gi)
+        console.log(gi)
         return gi;
     }
 
@@ -521,9 +506,7 @@ export const SortableSection: Component<{
 
     const handleNewItem = (e: {name: string; group: Id}) => {
 
-       let amt = Object.values(entities).filter(
-            (entity) => entity.type === "item" && entity.group === e.group
-        ).length;
+        let amt = Object.values(entities).length;
         let gh = e.group * 100;
         let newA = (gh + amt + 1);
         addItem(newA, e.name, e.group);
@@ -532,19 +515,38 @@ export const SortableSection: Component<{
     }
 
 
-    const handleRemoveItem = (e: {id: Id, groupId: Id}) => {
+    const handleRemoveItem = (id: Id) => {
+        let arr = Object.values(entities).filter((item) => item.id !== id)
 
-        console.log("e", e)
 
-        let id = e.id;
 
-        setEntities(id, produce((entity) => {
-            entity.active = false
-        }))
+        for (let i = 0; i < arr.length; i++) {
 
-        console.log('remove',entities)
+            if(arr[i].type === 'group') {
+                let group = arr[i] as Group;
+                setEntities(group.id, {
+                    id: group.id,
+                    name: group.name,
+                    title: group.title,
+                    color: group.color,
+                    type: group.type,
+                    order: group.order
+                });
+            }
 
-        groupItems(e.groupId)
+            if(arr[i].type === 'item') {
+                let item = arr[i] as Item;
+                setEntities(item.id, {
+                    id: item.id,
+                    name: item.name,
+                    group: item.group,
+                    color: item.color,
+                    type: item.type,
+                    order: item.order
+                });
+            }
+
+        }
     }
 
 
@@ -653,9 +655,9 @@ const RemoveItemInnerModal: Component<{
 const AddItemInnerModal: Component<{
     id: Id;
     add: ({
-        name: string,
-        group: Id
-              }) => any;
+              name: string,
+              group: Id
+          }) => any;
 }> = props => {
 
     const id = () => props.id;
@@ -669,34 +671,34 @@ const AddItemInnerModal: Component<{
 
     return (
 
-            <div class="bg-white shadow sm:rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-base font-semibold text-gray-900">Create Section Item</h3>
-                    <div class="mt-2 max-w-xl text-sm text-gray-500">
-                        <p>Change the email address you want associated with your account.</p>
-                    </div>
-                    <div class="mt-5 sm:flex sm:items-center">
-                        <div class="w-full sm:max-w-xl">
-                            <input onInput={(e: InputEvent) => setName((e.target as HTMLInputElement).value)} type="text" name="name" id="name" aria-label="Name"
-                                   class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                                   placeholder="name"/>
-                        </div>
-                    </div>
-                    <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-
-                        <Close onClick={() => props.add({
-                            name: getName(),
-                            group: id()
-                        })} type="button"
-                               class="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto">Create</Close>
-
-
-                        <Dialog.Trigger as="button" type="button"
-                                        class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</Dialog.Trigger>
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-base font-semibold text-gray-900">Create Section Item</h3>
+                <div class="mt-2 max-w-xl text-sm text-gray-500">
+                    <p>Change the email address you want associated with your account.</p>
+                </div>
+                <div class="mt-5 sm:flex sm:items-center">
+                    <div class="w-full sm:max-w-xl">
+                        <input onInput={(e: InputEvent) => setName((e.target as HTMLInputElement).value)} type="text" name="name" id="name" aria-label="Name"
+                               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                               placeholder="name"/>
                     </div>
                 </div>
-            </div>
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
 
-);
+                    <Close onClick={() => props.add({
+                        name: getName(),
+                        group: id()
+                    })} type="button"
+                           class="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto">Create</Close>
+
+
+                    <Dialog.Trigger as="button" type="button"
+                                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</Dialog.Trigger>
+                </div>
+            </div>
+        </div>
+
+    );
 };
 
