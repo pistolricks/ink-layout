@@ -25,7 +25,7 @@ import {
     Show, ValidComponent,
     VoidComponent
 } from "solid-js";
-import {createStore} from "solid-js/store";
+import {createStore, produce} from "solid-js/store";
 import Big, {div, e} from "big.js";
 import Icon from "~/components/ui/icon";
 import {classNames} from "~/lib/utils";
@@ -51,6 +51,7 @@ interface Base {
     type: "group" | "item";
     order: string;
     color?: string;
+    active: boolean;
 }
 
 interface Group extends Base {
@@ -101,7 +102,7 @@ const Item: VoidComponent<{
                             class="h-full w-full flex items-center justify-start relative p-1 border-b shadow dark:border-gray-800">
                             <div class=" flex items-center justify-center">
 
-                                <Dialog.Trigger onClick={props.remove}
+                                <button type="button" onClick={props.remove}
                                                 class="border border-red-400 m-1 w-4 h-4 rounded-full"/>
                                 <span class="font-sans uppercase text-base text-gray-500 dark:text-gray-400 truncate">
                                  {props.name}
@@ -159,7 +160,7 @@ const ItemOverlay: VoidComponent<{ name: string }> = (props) => {
     );
 };
 
-const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]; hideHeader?: boolean; addItem: (e: any) => any; removeItem: (e: any) => any }> = (
+const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]; hideHeader?: boolean; addItem: (e: any) => any; removeItem: (e: {id: Id, groupId: Id}) => any }> = (
     props
 ) => {
     const sortable = createSortable(props.id, {type: "group"});
@@ -167,9 +168,11 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
     const items = () => props.items;
 
+    const [getItems, setItems] = createSignal(items());
 
+    const currentItems = createMemo(() => getItems())
 
-    const [getSortedItemIds, setSortedItemIds] = createSignal(items().map((item) => item.id))
+    const [getSortedItemIds, setSortedItemIds] = createSignal(currentItems().map((item) => item.id))
 
     const hideHeader = () => props.hideHeader ?? false;
 
@@ -180,28 +183,29 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
     const isSelected = createSelector<Id>(getSelectedId)
 
     const selectItem = (id: Id) => {
-        setSelectedId(id)
+
     }
 
-    const removeItem = (id: Id) => {
-        if (isSelected(id)) {
-            props.removeItem(id)
-            let arr = items().filter((item) => item.id !== id)
+    const removeItem = (e: {id: Id, groupId: Id}) => {
+        setSelectedId(e.id)
+        if (isSelected(e.id)) {
+            props.removeItem({id: e.id, groupId: e.groupId})
 
+            setItems(items())
         }
     }
 
 
     const handleNewItem = () => {
         let gh = props.id * 100;
-        let newA = (gh + items()?.length + 1);
+        let newA = (gh + currentItems()?.length + 1);
 
         let newItem = props.addItem({
             name: `Item ${newA}`,
             group: props.id
         })
         console.log("newItem", newItem)
-        // setItems([...items(), newItem])
+        setItems(items())
 
     }
 
@@ -209,18 +213,24 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
 
     const sortedItemIds = createMemo(() => {
-        setSortedItemIds(items().map((item) => item.id))
+        setSortedItemIds(currentItems().map((item) => item.id))
         return getSortedItemIds()
     })
 
 
 
-
     createEffect(() => {
         console.log("props.items", props.items)
-        console.log(items())
+        console.log(getItems())
+        console.log(currentItems())
         console.log(getSelectedId())
     })
+
+    onMount(() => {
+        setItems(items())
+    })
+
+
 
     return (
         <>
@@ -235,11 +245,14 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
             >
                 <div class="flex justify-center items-center">
                     <SortableProvider ids={sortedItemIds()}>
-                        <For<Item[]> each={items()}>
+                        <For<Item[]> each={currentItems()}>
                             {(item) => (
+                                <Show<boolean> when={item.active === true}>
+                                   <div class={'text-gray-600 h-12'}> {item.active}</div>
                                 <Item id={item.id} name={item.name} group={item.group}
-                                      remove={() => selectItem(item.id)}
+                                      remove={() => removeItem({ id: item.id, groupId: item.group })}
                                       hideHeader={hideHeader()}/>
+                                </Show>
                             )}
                         </For>
                     </SortableProvider>
@@ -267,7 +280,7 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
                 <Dialog.Content
                     class="fixed left-1/2 top-1/2 z-50 min-w-80 -translate-x-1/2 -translate-y-1/2 rounded-lg border-2 border-corvu-400 bg-white px-6 py-5 data-open:animate-in data-open:fade-in-0% data-open:zoom-in-95% data-open:slide-in-from-top-10% data-closed:animate-out data-closed:fade-out-0% data-closed:zoom-out-95% data-closed:slide-out-to-top-10%">
 
-                    <RemoveItemInnerModal remove={() => removeItem(getSelectedId())} id={props.id} />
+                    <RemoveItemInnerModal remove={() => removeItem({id: getSelectedId(), groupId: props.id })} id={props.id} />
 
                 </Dialog.Content>
             </Dialog.Portal>
@@ -318,6 +331,7 @@ export const SortableSection: Component<{
             color: color,
             type: "group",
             order: getNextOrder(),
+            active: true
         });
     };
 
@@ -329,6 +343,7 @@ export const SortableSection: Component<{
             color: color,
             type: "item",
             order: getNextOrder(),
+            active: true
         });
 
         console.log(entities)
@@ -362,7 +377,7 @@ export const SortableSection: Component<{
 
      let gi = sortByOrder(
             Object.values(entities).filter(
-                (entity) => entity.type === "item" && entity.group === groupId
+                (entity) => entity.type === "item" && entity.group === groupId && entity.active
             )
         ) as Item[];
 
@@ -506,7 +521,9 @@ export const SortableSection: Component<{
 
     const handleNewItem = (e: {name: string; group: Id}) => {
 
-        let amt = Object.values(entities).length;
+       let amt = Object.values(entities).filter(
+            (entity) => entity.type === "item" && entity.group === e.group
+        ).length;
         let gh = e.group * 100;
         let newA = (gh + amt + 1);
         addItem(newA, e.name, e.group);
@@ -515,38 +532,19 @@ export const SortableSection: Component<{
     }
 
 
-    const handleRemoveItem = (id: Id) => {
-        let arr = Object.values(entities).filter((item) => item.id !== id)
+    const handleRemoveItem = (e: {id: Id, groupId: Id}) => {
 
+        console.log("e", e)
 
+        let id = e.id;
 
-        for (let i = 0; i < arr.length; i++) {
+        setEntities(id, produce((entity) => {
+            entity.active = false
+        }))
 
-            if(arr[i].type === 'group') {
-                let group = arr[i] as Group;
-                setEntities(group.id, {
-                    id: group.id,
-                    name: group.name,
-                    title: group.title,
-                    color: group.color,
-                    type: group.type,
-                    order: group.order
-                });
-            }
+        console.log('remove',entities)
 
-            if(arr[i].type === 'item') {
-                let item = arr[i] as Item;
-                setEntities(item.id, {
-                    id: item.id,
-                    name: item.name,
-                    group: item.group,
-                    color: item.color,
-                    type: item.type,
-                    order: item.order
-                });
-            }
-
-        }
+        groupItems(e.groupId)
     }
 
 
