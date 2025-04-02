@@ -1,7 +1,7 @@
 @import "tailwindcss";
-@import "./css/dnd.css";
+
 :root {
-  --background-rgb: 214, 219, 220;
+  --background-rgb: 255, 255, 255;
   --foreground-rgb: 0, 0, 0;
 }
 
@@ -15,4 +15,26 @@
 body {
   background: rgb(var(--background-rgb));
   color: rgb(var(--foreground-rgb));
+}
+
+
+.column-header {
+  --tw-bg-opacity: 1;
+  --tw-border-opacity: 1;
+  border-top-width: 0px;
+  cursor: move;
+  font-weight: 200;
+  padding: .1rem;
+  text-align: center
+}
+
+.sortable {
+  --tw-bg-opacity: 1;
+  cursor: move;
+  font-weight: 500;
+  text-align: center;
+  --tw-text-opacity: 1;
+  color: rgba(255,255,255,var(--tw-text-opacity));
+  white-space: normal;
+  touch-action: none
 }
