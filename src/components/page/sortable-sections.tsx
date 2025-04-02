@@ -145,7 +145,7 @@ export const SortableSections: Component<{
             const changingGroup = draggable.data.group !== closestGroup.id;
             if (changingGroup) {
                 const belowLastItem =
-                    groupItemIds(closestGroup.id).at(-1) === closestItem.id &&
+                    groupItemIds(closestGroup.id)[groupItemIds(closestGroup.id).length - 1] === closestItem.id &&
                     draggable.transformed.center.y > closestItem.transformed.center.y;
 
                 if (belowLastItem) return closestGroup;
@@ -191,7 +191,7 @@ export const SortableSections: Component<{
         }
 
         if (droppableIsGroup && !draggableIsGroup) {
-            order = new Big(orders.at(-1) ?? -ORDER_DELTA).plus(ORDER_DELTA).round();
+            order = new Big(orders[orders.length - 1] ?? -ORDER_DELTA).plus(ORDER_DELTA).round();
         } else {
             const draggableIndex = ids.indexOf(draggable.id);
             const droppableIndex = ids.indexOf(droppable.id);
@@ -288,6 +288,8 @@ export const SortableSections: Component<{
                     onDragOver={onDragOver}
                     onDragEnd={onDragEnd}
                     collisionDetector={closestEntity}
+                    style={{ "touch-action": "none" }}
+
                 >
                     <DragDropSensors/>
                     <div class={
