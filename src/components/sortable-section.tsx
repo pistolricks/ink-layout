@@ -51,6 +51,7 @@ interface Base {
     type: "group" | "item";
     order: string;
     color?: string;
+    active: boolean;
 }
 
 interface Group extends Base {
@@ -101,7 +102,7 @@ const Item: VoidComponent<{
                             class="h-full w-full flex items-center justify-start relative p-1 border-b shadow dark:border-gray-800">
                             <div class=" flex items-center justify-center">
 
-                                <Dialog.Trigger onClick={props.remove}
+                                <button type="button" onClick={props.remove}
                                                 class="border border-red-400 m-1 w-4 h-4 rounded-full"/>
                                 <span class="font-sans uppercase text-base text-gray-500 dark:text-gray-400 truncate">
                                  {props.name}
@@ -184,10 +185,9 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
     }
 
     const removeItem = (id: Id) => {
+        setSelectedId(id)
         if (isSelected(id)) {
             props.removeItem(id)
-            let arr = items().filter((item) => item.id !== id)
-
         }
     }
 
@@ -201,7 +201,7 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
             group: props.id
         })
         console.log("newItem", newItem)
-        // setItems([...items(), newItem])
+
 
     }
 
@@ -235,10 +235,10 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
             >
                 <div class="flex justify-center items-center">
                     <SortableProvider ids={sortedItemIds()}>
-                        <For<Item[]> each={items()}>
+                        <For<Item[]> each={items().filter((item) => item.active === true)}>
                             {(item) => (
                                 <Item id={item.id} name={item.name} group={item.group}
-                                      remove={() => selectItem(item.id)}
+                                      remove={() => removeItem(item.id)}
                                       hideHeader={hideHeader()}/>
                             )}
                         </For>
@@ -318,6 +318,7 @@ export const SortableSection: Component<{
             color: color,
             type: "group",
             order: getNextOrder(),
+            active: true
         });
     };
 
@@ -329,6 +330,7 @@ export const SortableSection: Component<{
             color: color,
             type: "item",
             order: getNextOrder(),
+            active: true
         });
 
         console.log(entities)
@@ -506,7 +508,9 @@ export const SortableSection: Component<{
 
     const handleNewItem = (e: {name: string; group: Id}) => {
 
-        let amt = Object.values(entities).length;
+        let amt = Object.values(entities).filter(
+            (entity) => entity.type === "item" && entity.group === e.group
+        ).length;
         let gh = e.group * 100;
         let newA = (gh + amt + 1);
         addItem(newA, e.name, e.group);
@@ -516,43 +520,25 @@ export const SortableSection: Component<{
 
 
     const handleRemoveItem = (id: Id) => {
-        let arr = Object.values(entities).filter((item) => item.id !== id)
+        let item = Object.values(entities).find((item) => item.id === id) as Item;
+
+        setEntities(item.id, {
+            id: item.id,
+            name: item.name,
+            group: item.group,
+            color: item.color,
+            type: "item",
+            order: item.order,
+            active: false
+        });
 
 
-
-        for (let i = 0; i < arr.length; i++) {
-
-            if(arr[i].type === 'group') {
-                let group = arr[i] as Group;
-                setEntities(group.id, {
-                    id: group.id,
-                    name: group.name,
-                    title: group.title,
-                    color: group.color,
-                    type: group.type,
-                    order: group.order
-                });
-            }
-
-            if(arr[i].type === 'item') {
-                let item = arr[i] as Item;
-                setEntities(item.id, {
-                    id: item.id,
-                    name: item.name,
-                    group: item.group,
-                    color: item.color,
-                    type: item.type,
-                    order: item.order
-                });
-            }
-
-        }
     }
 
 
     createEffect(() => {
         console.log(entities)
-        console.log(groups())
+
     })
 
     return (
