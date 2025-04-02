@@ -26,11 +26,12 @@ import {
     VoidComponent
 } from "solid-js";
 import {createStore} from "solid-js/store";
-import Big, {div} from "big.js";
+import Big, {div, e} from "big.js";
 import Icon from "~/components/ui/icon";
 import {classNames} from "~/lib/utils";
 import Dialog, {Close} from '@corvu/dialog'
 import {Dynamic} from "solid-js/web";
+import {Plus} from "lucide-solid";
 
 
 declare module "solid-js" {
@@ -125,19 +126,50 @@ const Item: VoidComponent<{
 };
 
 const ItemOverlay: VoidComponent<{ name: string }> = (props) => {
-    return <div class="sortable w-full uppercase min-h-[100px]">{props.name}</div>;
+    return (
+        <div
+            class={classNames(
+                 "border border-b",
+                "sortable w-full",
+                "bg-white"
+            )}
+        >
+                <div class="rounded-t-lg h-full w-full flex items-start justify-start flex-col  rounded-xs">
+                    <div
+                        class="h-full w-full flex items-center justify-start relative p-1 border-b shadow dark:border-gray-800">
+                        <div class=" flex items-center justify-center">
+
+                            <button type={'button'}
+                                            class="border border-red-400 m-1 w-4 h-4 rounded-full"/>
+                            <span class="font-sans uppercase text-base text-gray-500 dark:text-gray-400 truncate">
+                                 {props.name}
+                            </span>
+                        </div>
+                        <div class="w-full flex items-center justify-center absolute left-0">
+
+                        </div>
+                    </div>
+                </div>
+            <div class="h-full min-h-[100px] w-full bg-blue-200">
+                <div class="p-4">
+
+                </div>
+            </div>
+        </div>
+    );
 };
 
-const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]; hideHeader?: boolean; addItem: (e: any) => any }> = (
+const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]; hideHeader?: boolean; addItem: (e: any) => any; removeItem: (e: any) => any }> = (
     props
 ) => {
     const sortable = createSortable(props.id, {type: "group"});
 
 
+    const items = () => props.items;
 
-    const [getItems, setItems] = createSignal(props.items)
 
-    const [getSortedItemIds, setSortedItemIds] = createSignal(getItems().map((item) => item.id))
+
+    const [getSortedItemIds, setSortedItemIds] = createSignal(items().map((item) => item.id))
 
     const hideHeader = () => props.hideHeader ?? false;
 
@@ -148,26 +180,28 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
     const isSelected = createSelector<Id>(getSelectedId)
 
     const selectItem = (id: Id) => {
-        console.log(id)
-        if (id) {
-            setSelectedId(id)
-        }
+        setSelectedId(id)
     }
 
     const removeItem = (id: Id) => {
         if (isSelected(id)) {
-            let arr = getItems().filter((item) => item.id !== id)
-            setItems(arr)
+            props.removeItem(id)
+            let arr = items().filter((item) => item.id !== id)
+
         }
     }
 
 
     const handleNewItem = () => {
+        let gh = props.id * 100;
+        let newA = (gh + items()?.length + 1);
+
         let newItem = props.addItem({
-            name: `Item ${getItems()?.length + 1}`,
+            name: `Item ${newA}`,
             group: props.id
         })
-        setItems([...getItems(), newItem])
+        console.log("newItem", newItem)
+        // setItems([...items(), newItem])
 
     }
 
@@ -175,13 +209,18 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
 
     const sortedItemIds = createMemo(() => {
-        setSortedItemIds(getItems().map((item) => item.id))
+        setSortedItemIds(items().map((item) => item.id))
         return getSortedItemIds()
     })
 
 
 
-    createEffect(() => console.log(getItems()))
+
+    createEffect(() => {
+        console.log("props.items", props.items)
+        console.log(items())
+        console.log(getSelectedId())
+    })
 
     return (
         <>
@@ -196,7 +235,7 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
             >
                 <div class="flex justify-center items-center">
                     <SortableProvider ids={sortedItemIds()}>
-                        <For<Item[]> each={getItems()}>
+                        <For<Item[]> each={items()}>
                             {(item) => (
                                 <Item id={item.id} name={item.name} group={item.group}
                                       remove={() => selectItem(item.id)}
@@ -258,6 +297,7 @@ const GroupOverlay: VoidComponent<{ name: string; title?: string; items: Item[] 
 
 export const SortableSection: Component<{
     hideHeader: boolean;
+    addNewGroup: (e: any) => any;
 }> = props => {
 
     const hideHeader = () => props.hideHeader;
@@ -270,7 +310,6 @@ export const SortableSection: Component<{
         nextOrder += ORDER_DELTA;
         return nextOrder.toString();
     };
-    const [getGroupItems, setGroupItems] = createSignal<Item[]>([])
     const addGroup = (id: Id, name: string, title?: string, color?: string) => {
         setEntities(id, {
             id,
@@ -299,10 +338,11 @@ export const SortableSection: Component<{
     const setup = () => {
         batch(() => {
             addGroup(1, "Main", "Main");
-            addGroup(2, "Category", "Category");
-            addItem(3, "item 1", 1);
-            addItem(4, "item 1", 2);
-            addItem(5, "item 2", 2);
+            addGroup(2, "Section", "Section");
+            addItem(101, "item 101", 1);
+            addItem(201, "item 201", 2);
+            addItem(202, "item 202", 2);
+
         });
     };
 
@@ -326,7 +366,7 @@ export const SortableSection: Component<{
             )
         ) as Item[];
 
-        console.log("getGroupItems", gi)
+     console.log(gi)
         return gi;
     }
 
@@ -455,31 +495,64 @@ export const SortableSection: Component<{
         move(draggable, droppable as Droppable, false);
 
 
-    const handleNewItem = (e: {name: string; group: Id}) => {
-
-
-        console.log(e)
-        let amt = Object.values(entities).length;
-
-
-        console.log('amt', amt)
+    const handleNewGroup = () => {
+        let amt = Object.values(entities).filter((group) => group.type === "group").length;
         let newA = amt + 1;
 
+        let name = `Section ${newA}`
 
+        addGroup(newA, name, name);
+    }
+
+    const handleNewItem = (e: {name: string; group: Id}) => {
+
+        let amt = Object.values(entities).length;
+        let gh = e.group * 100;
+        let newA = (gh + amt + 1);
         addItem(newA, e.name, e.group);
-
-
         return Object.values(entities).find((entity) => entity.id === newA) as Item
 
     }
 
 
+    const handleRemoveItem = (id: Id) => {
+        let arr = Object.values(entities).filter((item) => item.id !== id)
+
+
+
+        for (let i = 0; i < arr.length; i++) {
+
+            if(arr[i].type === 'group') {
+                let group = arr[i] as Group;
+                setEntities(group.id, {
+                    id: group.id,
+                    name: group.name,
+                    title: group.title,
+                    color: group.color,
+                    type: group.type,
+                    order: group.order
+                });
+            }
+
+            if(arr[i].type === 'item') {
+                let item = arr[i] as Item;
+                setEntities(item.id, {
+                    id: item.id,
+                    name: item.name,
+                    group: item.group,
+                    color: item.color,
+                    type: item.type,
+                    order: item.order
+                });
+            }
+
+        }
+    }
 
 
     createEffect(() => {
         console.log(entities)
         console.log(groups())
-        console.log(getGroupItems())
     })
 
     return (
@@ -507,11 +580,22 @@ export const SortableSection: Component<{
                                         title={group.title}
                                         items={groupItems(group.id)}
                                         addItem={handleNewItem}
+                                        removeItem={handleRemoveItem}
                                         hideHeader={hideHeader()}
                                     />
                                 )}
                             </For>
                         </SortableProvider>
+
+                        <div class="fter:h-px my-8 flex items-center before:h-px before:flex-1  before:bg-gray-300 before:content-[''] after:h-px after:flex-1 after:bg-gray-300  after:content-['']">
+                            <button
+                                onClick={handleNewGroup}
+                                type="button" class="flex items-center rounded-full border border-gray-300 bg-secondary-50 px-3 py-2 text-center text-sm font-medium text-gray-900 hover:bg-gray-100">
+                                <Icon name="Plus" class="mr-1 h-4 w-4"/>
+                                Add Section
+                            </button>
+                        </div>
+
                     </div>
                     <DragOverlay>
                         {(draggable: Draggable) => {
