@@ -32,7 +32,10 @@ declare module "solid-js" {
 
 const sortByOrder = (entities: Entity[]) => {
     if(!entities)return;
-    const sorted = entities.map((item) => ({order: new Big(item.order), item}));
+    const sorted = entities.map((item) => {
+        if(!item)return;
+        return ({order: new Big(item.order), item})
+    });
     sorted.sort((a, b) => a.order.cmp(b.order));
     return sorted.map((entry) => entry.item);
 };
@@ -100,7 +103,8 @@ export const SortableSections: Component<{
 
     const groupOrders = () => groups().map((group) => group.order);
 
-    const groupItems = (groupId: Id) => {
+    const groupItems = (groupId?: Id) => {
+        if(!groupId)return;
         if(!entities)return;
             return sortByOrder(
                 Object.values(entities).filter(
