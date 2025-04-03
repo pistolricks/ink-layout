@@ -291,6 +291,7 @@ export const SortableSections: Component<{
                         )}>
                         <SortableProvider ids={groupIds()}>
 
+
                             <For<Group[]> each={groups()}>
                                 {(group, index) => (
                                     <>

@@ -47,7 +47,7 @@ const Item: VoidComponent<{
                         </div>
                     </div>
                 </Show>
-                <div class="h-full min-h-full w-full bg-blue-200">
+                <div class="h-full  w-full bg-blue-200">
                     <div class="p-4">
 
                     </div>
