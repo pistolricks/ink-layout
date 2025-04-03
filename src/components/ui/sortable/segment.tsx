@@ -3,21 +3,21 @@ import {createSortable, Id, maybeTransformStyle, SortableProvider} from "@thisbe
 import {div} from "big.js";
 import {classNames} from "~/lib/utils";
 import Icon from "~/components/ui/icon";
-import Dialog from "@corvu/dialog";
-import {Item,ItemOverlay} from "~/components/ui/sortable/item";
+
+import {Sort, SortOverlay} from "~/components/ui/sortable/Sort.tsx";
 
 
-const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]; hideHeader?: boolean; addItem: (e: any) => any; removeItem: (e: any) => any }> = (
+const Segment: VoidComponent<{ id: Id; name: string; title?: string; list: Sort[]; hideHeader?: boolean; addSort: (e: any) => any; removeSort: (e: any) => any }> = (
     props
 ) => {
-    const sortable = createSortable(props.id, {type: "group"});
+    const sortable = createSortable(props.id, {type: "segment"});
 
 
-    const items = () => props.items;
+    const list = () => props.list;
 
 
 
-    const [getSortedItemIds, setSortedItemIds] = createSignal(items().map((item) => item.id))
+    const [getSortedSortIds, setSortedSortIds] = createSignal(list().map((item) => item.id))
 
     const hideHeader = () => props.hideHeader ?? false;
 
@@ -27,27 +27,27 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
     const isSelected = createSelector<Id>(getSelectedId)
 
-    const selectItem = (id: Id) => {
+    const selectSort = (id: Id) => {
         setSelectedId(id)
     }
 
-    const removeItem = (id: Id) => {
+    const removeSort = (id: Id) => {
         setSelectedId(id)
         if (isSelected(id)) {
-            props.removeItem(id)
+            props.removeSort(id)
         }
     }
 
 
-    const handleNewItem = () => {
+    const handleNewSort = () => {
         let gh = props.id * 100;
-        let newA = (gh + items()?.length + 1);
+        let newA = (gh + list()?.length + 1);
 
-        let newItem = props.addItem({
+        let newSort = props.addSort({
             name: `${newA}`,
             group: props.id
         })
-        console.log("newItem", newItem)
+        console.log("newSort", newSort)
 
 
     }
@@ -55,17 +55,17 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
 
 
-    const sortedItemIds = createMemo(() => {
-        setSortedItemIds(items().map((item) => item.id))
-        return getSortedItemIds()
+    const sortedSortIds = createMemo(() => {
+        setSortedSortIds(list().map((item) => item.id))
+        return getSortedSortIds()
     })
 
 
 
 
     createEffect(() => {
-        console.log("props.items", props.items)
-        console.log(items())
+        console.log("props.list", props.list)
+        console.log(list())
         console.log(getSelectedId())
     })
 
@@ -81,11 +81,11 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
                         "overflow-hidden")}
             >
                 <div class="flex justify-center items-center">
-                    <SortableProvider ids={sortedItemIds()}>
-                        <For<Item[]> each={items().filter((item) => item.active === true)}>
+                    <SortableProvider ids={sortedSortIds()}>
+                        <For<Sort[]> each={list().filter((item) => item.active === true)}>
                             {(item) => (
-                                <Item id={item.id} name={item.name} group={item.group}
-                                      remove={() => removeItem(item.id)}
+                                <Sort id={item.id} name={item.name} segment_id={item.segment_id}
+                                      remove={() => removeSort(item.id)}
                                       hideHeader={hideHeader()}/>
                             )}
                         </For>
@@ -100,7 +100,7 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
                                 <span><Icon name="Grip" class="p-1"/></span>
                                 <span>{props.name}</span>
                             </div>
-                            <button as="button" onClick={handleNewItem}>
+                            <button as="button" onClick={handleNewSort}>
                                 <span><Icon name="Plus" class="p-1"/></span>
                             </button>
                         </div>
@@ -111,14 +111,14 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
     );
 };
 
-const GroupOverlay: VoidComponent<{ name: string; title?: string; items: Item[] }> = (
+const SegmentOverlay: VoidComponent<{ name: string; title?: string; list: Sort[] }> = (
     props
 ) => {
     return (
         <div class="rounded-lg border border-gray-300">
             <div class="flex justify-center items-center bg-gray-100">
-                <For<Item[]> each={props.items}>
-                    {(item) => <ItemOverlay name={item.name}/>}
+                <For<Sort[]> each={props.list}>
+                    {(item) => <SortOverlay name={item.name}/>}
                 </For>
             </div>
             <div class="column-header cursor-move rounded-b-lg border-gray-300">
@@ -131,5 +131,5 @@ const GroupOverlay: VoidComponent<{ name: string; title?: string; items: Item[] 
     );
 };
 
-export {Group, GroupOverlay}
+export {Segment, SegmentOverlay}
 

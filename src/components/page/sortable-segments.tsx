@@ -16,9 +16,11 @@ import Big, {div} from "big.js";
 import Icon from "~/components/ui/icon";
 import {classNames} from "~/lib/utils";
 import Dialog, {Close} from '@corvu/dialog'
-import {Group, GroupOverlay} from "~/components/ui/sortable/group";
-import {Item, ItemOverlay} from "~/components/ui/sortable/item";
+
+import {Sort, SortOverlay} from "~/components/ui/sortable/Sort";
 import {Entity, ORDER_DELTA} from "~/lib/types";
+import {Segment, SegmentOverlay} from "~/components/ui/sortable/segment";
+import {log} from "vinxi/dist/types/lib/logger";
 
 
 declare module "solid-js" {
@@ -30,167 +32,177 @@ declare module "solid-js" {
 }
 
 
-const sortByOrder = (entities: Entity[]) => {
-    const sorted = entities.map((item) => ({order: new Big(item.order), item}));
+const sortByOrder = (segments: Segment[]) => {
+    const sorted = segments.map((item) => ({order: new Big(item.order), item}));
+    sorted.sort((a, b) => a.order.cmp(b.order));
+    return sorted.map((entry) => entry.item);
+};
+
+const sortSortsByOrder = (segments: Sort[]) => {
+    const sorted = segments.map((item) => ({order: new Big(item.order), item}));
     sorted.sort((a, b) => a.order.cmp(b.order));
     return sorted.map((entry) => entry.item);
 };
 
 export const SortableSections: Component<{
     hideHeader: boolean;
-    addNewGroup: (e: any) => any;
+    addNewSegment: (e: any) => any;
 }> = props => {
 
     const hideHeader = () => props.hideHeader;
 
-    const [entities, setEntities] = createStore<Record<Id, Entity>>();
-
+    const [segments, setSegments] = createStore<Record<Id, Segment>>();
+    const [sorts, setSorts] = createStore<Record<Id, Sort>>();
     let nextOrder = 0;
 
     const getNextOrder = () => {
         nextOrder += ORDER_DELTA;
         return nextOrder.toString();
     };
-    const addGroup = (id: Id, name: string, title?: string, color?: string) => {
-        setEntities(id, {
+    const addSegment = (id: Id, name: string, title?: string, color?: string) => {
+        setSegments(id, {
             id,
             name,
             title: title,
             color: color,
-            type: "group",
             order: getNextOrder(),
-            active: true
+            active: true,
+            list: []
         });
     };
 
-    const addItem = (id: Id, name: string, group: Id, color?: string) => {
-        setEntities(id, {
+    const addSort = (id: Id, name: string, segment: Id, color?: string) => {
+        setSegments(id, {
             id,
             name,
-            group,
+            segment,
             color: color,
             type: "item",
             order: getNextOrder(),
             active: true
         });
 
-        console.log(entities)
+        console.log(segments)
     };
 
     const setup = () => {
         batch(() => {
-            addGroup(1, "Main", "Main");
-            addGroup(2, "Section", "Section");
-            addItem(101, "101", 1);
-            addItem(201, "201", 2);
-            addItem(202, "202", 2);
+            addSegment(1, "Main", "Main");
+            addSegment(2, "Section", "Section");
+            addSort(101, "101", 1);
+            addSort(201, "201", 2);
+            addSort(202, "202", 2);
 
         });
     };
 
     onMount(setup);
 
-    const groups = createMemo(() =>
+    const segmented = createMemo(() =>
         sortByOrder(
-            Object.values(entities).filter((item) => item.type === "group")
-        ) as Group[]);
+            Object.values(segments).filter((item) => item.type === "segment")
+        ) as Segment[]);
 
-    const groupIds = () => groups().map((group) => group.id);
+    const segmentIds = () => segmented().map((segment) => segment.id);
 
-    const groupOrders = () => groups().map((group) => group.order);
+    const segmentOrders = () => segmented().map((segment) => segment.order);
 
-    const groupItems = (groupId: Id) => {
-        let gi = sortByOrder(
-            Object.values(entities).filter(
-                (entity) => entity.type === "item" && entity.group === groupId
+    const segmentSorts = (segmentId: Id) => {
+        let gi = sortSortsByOrder(
+            Object.values(sorts).filter(
+                (entity) => entity.segment === segmentId
             )
-        ) as Item[];
+        ) as Sort[];
+
+        let segment = Object.values(segments).find((segment: Segment) => segment.id === segmentId)
+
+        segment.list
 
         console.log(gi)
         return gi;
     }
 
-    const groupItemIds = (groupId: Id) =>
-        groupItems(groupId).map((item) => item.id);
+    const segmentSortIds = (segmentId: Id) =>
+        segmentSorts(segmentId).map((item) => item.id);
 
-    const groupItemOrders = (groupId: Id) =>
-        groupItems(groupId).map((item) => item.order);
+    const segmentSortOrders = (segmentId: Id) =>
+        segmentSorts(segmentId).map((item) => item.order);
 
-    const isSortableGroup = (sortable: Draggable | Droppable) =>
-        sortable.data.type === "group";
+    const isSortableSegment = (sortable: Draggable | Droppable) =>
+        sortable.data.type === "segment";
 
     const closestEntity: CollisionDetector = (draggable, droppables, context) => {
-        const closestGroup = closestCenter(
+        const closestSegment = closestCenter(
             draggable,
-            droppables.filter((droppable) => isSortableGroup(droppable)),
+            droppables.filter((droppable) => isSortableSegment(droppable)),
             context
         );
-        if (isSortableGroup(draggable)) {
-            return closestGroup;
-        } else if (closestGroup) {
-            const closestItem = closestCenter(
+        if (isSortableSegment(draggable)) {
+            return closestSegment;
+        } else if (closestSegment) {
+            const closestSort = closestCenter(
                 draggable,
                 droppables.filter(
                     (droppable) =>
-                        !isSortableGroup(droppable) &&
-                        droppable.data.group === closestGroup.id
+                        !isSortableSegment(droppable) &&
+                        droppable.data.segment === closestSegment.id
                 ),
                 context
             );
 
-            if (!closestItem) {
-                return closestGroup;
+            if (!closestSort) {
+                return closestSegment;
             }
 
-            const changingGroup = draggable.data.group !== closestGroup.id;
-            if (changingGroup) {
-                const belowLastItem =
-                    groupItemIds(closestGroup.id)[groupItemIds(closestGroup.id).length - 1] === closestItem.id &&
-                    draggable.transformed.center.y > closestItem.transformed.center.y;
+            const changingSegment = draggable.data.segment !== closestSegment.id;
+            if (changingSegment) {
+                const belowLastSort =
+                    segmentSortIds(closestSegment.id)[segmentSortIds(closestSegment.id).length - 1] === closestSort.id &&
+                    draggable.transformed.center.y > closestSort.transformed.center.y;
 
-                if (belowLastItem) return closestGroup;
+                if (belowLastSort) return closestSegment;
             }
 
-            return closestItem;
+            return closestSort;
         }
     };
 
     const move = (
         draggable: Draggable,
         droppable: Droppable,
-        onlyWhenChangingGroup = true
+        onlyWhenChangingSegment = true
     ) => {
         if (!draggable || !droppable) return;
 
-        const draggableIsGroup = isSortableGroup(draggable);
-        const droppableIsGroup = isSortableGroup(droppable);
+        const draggableIsSegment = isSortableSegment(draggable);
+        const droppableIsSegment = isSortableSegment(droppable);
 
-        const draggableGroupId = draggableIsGroup
+        const draggableSegmentId = draggableIsSegment
             ? draggable.id
-            : draggable.data.group;
+            : draggable.data.segment;
 
-        const droppableGroupId = droppableIsGroup
+        const droppableSegmentId = droppableIsSegment
             ? droppable.id
-            : droppable.data.group;
+            : droppable.data.segment;
 
         if (
-            onlyWhenChangingGroup &&
-            (draggableIsGroup || draggableGroupId === droppableGroupId)
+            onlyWhenChangingSegment &&
+            (draggableIsSegment || draggableSegmentId === droppableSegmentId)
         ) {
             return;
         }
 
         let ids, orders, order;
 
-        if (draggableIsGroup) {
-            ids = groupIds();
-            orders = groupOrders();
+        if (draggableIsSegment) {
+            ids = segmentIds();
+            orders = segmentOrders();
         } else {
-            ids = groupItemIds(droppableGroupId);
-            orders = groupItemOrders(droppableGroupId);
+            ids = segmentSortIds(droppableSegmentId);
+            orders = segmentSortOrders(droppableSegmentId);
         }
 
-        if (droppableIsGroup && !draggableIsGroup) {
+        if (droppableIsSegment && !draggableIsSegment) {
             order = new Big(orders[orders.length - 1] ?? -ORDER_DELTA).plus(ORDER_DELTA).round();
         } else {
             const draggableIndex = ids.indexOf(draggable.id);
@@ -220,10 +232,10 @@ export const SortableSections: Component<{
         }
 
         if (order !== undefined) {
-            setEntities(draggable.id, (entity) => ({
+            setSegments(draggable.id, (entity) => ({
                 ...entity,
                 order: order.toString(),
-                group: droppableGroupId,
+                segment: droppableSegmentId,
             }));
         }
     };
@@ -235,35 +247,35 @@ export const SortableSections: Component<{
         move(draggable, droppable as Droppable, false);
 
 
-    const handleNewGroup = () => {
-        let amt = Object.values(entities).filter((group) => group.type === "group").length;
+    const handleNewSegment = () => {
+        let amt = Object.values(segments).filter((segment) => segment.type === "segment").length;
         let newA = amt + 1;
 
         let name = `Section ${newA}`
 
-        addGroup(newA, name, name);
+        addSegment(newA, name, name);
     }
 
-    const handleNewItem = (e: { name: string; group: Id }) => {
+    const handleNewSort = (e: { name: string; segment: Id }) => {
 
-        let amt = Object.values(entities).filter(
-            (entity) => entity.type === "item" && entity.group === e.group
+        let amt = Object.values(segments).filter(
+            (entity) => entity.type === "item" && entity.segment === e.segment
         ).length;
-        let gh = e.group * 100;
+        let gh = e.segment * 100;
         let newA = (gh + amt + 1);
-        addItem(newA, e.name, e.group);
-        return Object.values(entities).find((entity) => entity.id === newA) as Item
+        addSort(newA, e.name, e.segment);
+        return Object.values(segments).find((entity) => entity.id === newA) as Sort
 
     }
 
 
-    const handleRemoveItem = (id: Id) => {
-        let item = Object.values(entities).find((item) => item.id === id) as Item;
+    const handleRemoveSort = (id: Id) => {
+        let item = Object.values(segments).find((item) => item.id === id) as Sort;
 
-        setEntities(item.id, {
+        setSegments(item.id, {
             id: item.id,
             name: item.name,
-            group: item.group,
+            segment: item.segment,
             color: item.color,
             type: "item",
             order: item.order,
@@ -275,7 +287,7 @@ export const SortableSections: Component<{
 
 
     createEffect(() => {
-        console.log(entities)
+        console.log(segments)
 
     })
 
@@ -297,16 +309,16 @@ export const SortableSections: Component<{
                             hideHeader() ? "" : "space-y-4",
                             "flex flex-col"
                         )}>
-                        <SortableProvider ids={groupIds()}>
-                            <For<Group[]> each={groups()}>
-                                {(group, index) => (
-                                    <Group
-                                        id={group.id}
-                                        name={group.name}
-                                        title={group.title}
-                                        items={groupItems(group.id)}
-                                        addItem={handleNewItem}
-                                        removeItem={handleRemoveItem}
+                        <SortableProvider ids={segmentIds()}>
+                            <For<Segment[]> each={segmented()}>
+                                {(segment, index) => (
+                                    <Segment
+                                        id={segment.id}
+                                        name={segment.name}
+                                        title={segment.title}
+                                        items={segmentSorts(segment.id)}
+                                        addSort={handleNewSort}
+                                        removeSort={handleRemoveSort}
                                         hideHeader={hideHeader()}
                                     />
                                 )}
@@ -317,7 +329,7 @@ export const SortableSections: Component<{
                             <div
                                 class="fter:h-px my-8 flex items-center before:h-px before:flex-1  before:bg-gray-300 before:content-[''] after:h-px after:flex-1 after:bg-gray-300  after:content-['']">
                                 <button
-                                    onClick={handleNewGroup}
+                                    onClick={handleNewSegment}
                                     type="button"
                                     class="flex items-center rounded-full border border-gray-300 bg-secondary-50 px-3 py-2 text-center text-sm font-medium text-gray-900 hover:bg-gray-100">
                                     <Icon name="Plus" class="mr-1 h-4 w-4"/>
@@ -328,11 +340,11 @@ export const SortableSections: Component<{
                     </div>
                     <DragOverlay>
                         {(draggable: Draggable) => {
-                            const entity = entities[draggable.id];
-                            return isSortableGroup(draggable) ? (
-                                <GroupOverlay name={entity.name} title={entity?.title} items={groupItems(entity.id)}/>
+                            const entity = segments[draggable.id];
+                            return isSortableSegment(draggable) ? (
+                                <SegmentOverlay name={entity.name} title={entity?.title} items={segmentSorts(entity.id)}/>
                             ) : (
-                                <ItemOverlay name={entity.name}/>
+                                <SortOverlay name={entity.name}/>
                             );
                         }}
                     </DragOverlay>
@@ -343,7 +355,7 @@ export const SortableSections: Component<{
     );
 };
 
-const RemoveItemInnerModal: Component<{
+const RemoveSortInnerModal: Component<{
     id: Id;
     remove: (id: Id) => void;
 }> = props => {
@@ -365,7 +377,7 @@ const RemoveItemInnerModal: Component<{
                     </svg>
                 </div>
                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                    <h3 class="text-base font-semibold text-gray-900" id="modal-title">Delete Item?</h3>
+                    <h3 class="text-base font-semibold text-gray-900" id="modal-title">Delete Sort?</h3>
                 </div>
             </div>
             <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
@@ -381,11 +393,11 @@ const RemoveItemInnerModal: Component<{
     );
 };
 
-const AddItemInnerModal: Component<{
+const AddSortInnerModal: Component<{
     id: Id;
     add: ({
               name: string,
-              group: Id
+              segment: Id
           }) => any;
 }> = props => {
 
@@ -402,7 +414,7 @@ const AddItemInnerModal: Component<{
 
         <div class="bg-white shadow sm:rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-base font-semibold text-gray-900">Create Section Item</h3>
+                <h3 class="text-base font-semibold text-gray-900">Create Section Sort</h3>
                 <div class="mt-2 max-w-xl text-sm text-gray-500">
                     <p>Change the email address you want associated with your account.</p>
                 </div>
@@ -418,7 +430,7 @@ const AddItemInnerModal: Component<{
 
                     <Close onClick={() => props.add({
                         name: getName(),
-                        group: id()
+                        segment: id()
                     })} type="button"
                            class="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto">Create</Close>
 

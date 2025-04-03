@@ -26,3 +26,25 @@ export interface Item extends Base {
 }
 
 export type Entity = Group | Item;
+
+export type Segment = {
+    id: Id;
+    name: string;
+    type: "segment";
+    title?: string;
+    order: string;
+    color?: string;
+    active: boolean;
+    list: Sort[];
+}
+
+export type Sort = {
+    id: Id;
+    name: string;
+    type: "sort";
+    title?: string;
+    order: string;
+    color?: string;
+    active: boolean;
+    segment_id: Id;
+}

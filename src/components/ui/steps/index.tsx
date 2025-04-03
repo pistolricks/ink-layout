@@ -27,8 +27,6 @@ const Steps: Component<{}> = props => {
 
     return (
         <>
-
-
                 <div
                     class="flex items-baseline justify-between flex-shrink-0 px-0.5 bg-white border-b">
                     <p class="text-3xl pl-1 uppercase text-blue-900 tracking-tight">
@@ -63,7 +61,7 @@ const Steps: Component<{}> = props => {
         <main {...api().getRootProps()} class="flex-1 overflow-y-auto">
             <Index<{ title: string, data: any, component: ValidComponent }[]> each={stepsData()} class={""}>
                 {(step, index) => (
-                    <div {...api().getContentProps(props = {index: index})} class="">
+                    <div {...api().getContentProps(props = {index: index})}>
                                 <Dynamic<ValidComponent> component={step().component} {...step().data}/>
                     </div>
                 )}
