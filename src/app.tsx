@@ -5,7 +5,8 @@ import Dialog from '@corvu/dialog'
 import Nav from "~/components/Nav";
 
 import "./app.css";
-import Resizable from "@corvu/resizable";
+import "@fontsource/inter"
+
 
 export default function App() {
     return (

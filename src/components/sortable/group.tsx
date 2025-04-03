@@ -1,10 +1,10 @@
 import {createEffect, createMemo, createSelector, createSignal, For, Show, VoidComponent} from "solid-js";
 import {createSortable, Id, maybeTransformStyle, SortableProvider} from "@thisbeyond/solid-dnd";
 import {div, s} from "big.js";
-import {classNames} from "~/lib/utils";
-import Icon from "~/components/ui/icon";
+import {classNames} from "~/lib/utils.ts";
+import Icon from "~/components/ui/icon.tsx";
 import Dialog from "@corvu/dialog";
-import {Item, ItemOverlay} from "~/components/ui/sortable/item";
+import {Item, ItemOverlay} from "~/components/sortable/item.tsx";
 import Resizable from '@corvu/resizable'
 
 const Group: VoidComponent<{
@@ -103,7 +103,9 @@ const Group: VoidComponent<{
                                         >
                                             <Item id={item.id} name={item.name} group={item.group}
                                                   remove={() => removeItem(item.id)}
-                                                  hideHeader={hideHeader()}/>
+                                                  hideHeader={hideHeader()}
+                                                  count={filtered().length}
+                                            />
                                         </Resizable.Panel>
                                         <Show<boolean> when={items().length - 1 !== index()}>
                                             <Resizable.Handle

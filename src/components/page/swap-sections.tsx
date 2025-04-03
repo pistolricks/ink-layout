@@ -3,7 +3,7 @@ import {createStore} from "solid-js/store";
 import {div} from "big.js";
 import Dialog, {Close} from '@corvu/dialog'
 import {Entity, type Group as GroupType, GroupProps, ORDER_DELTA} from "~/lib/types";
-import {Group} from "~/components/ui/sortable/group";
+import {Group} from "~/components/sortable/group";
 import {Id} from "@thisbeyond/solid-dnd";
 
 import groups from "~/data/groups.json";

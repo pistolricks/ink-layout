@@ -1,21 +1,25 @@
 import {Show, VoidComponent} from "solid-js";
 import {createSortable, Id} from "@thisbeyond/solid-dnd";
 import {div} from "big.js";
-import {classNames} from "~/lib/utils";
+import {classNames} from "~/lib/utils.ts";
+import Segment from "~/components/sortable/segment.tsx";
 
 
-const Sort: VoidComponent<{
+const Item: VoidComponent<{
     id: Id;
     name: string;
-    segment_id: Id;
+    group: Id;
     hideHeader?: boolean;
+    count: number;
     remove: () => void;
 }> = (props) => {
     const hideHeader = () => props.hideHeader;
 
+    const count = () => props.count;
+
     const sortable = createSortable(props.id, {
         type: "item",
-        segment_id: props.segment_id,
+        group: props.group,
     });
 
     return (
@@ -47,10 +51,8 @@ const Sort: VoidComponent<{
                         </div>
                     </div>
                 </Show>
-                <div class="h-full min-h-[100px] w-full bg-blue-200">
-                    <div class="p-4">
-
-                    </div>
+                <div class="h-full  w-full bg-blue-200">
+                    <Segment count={count()}/>
                 </div>
             </div>
 
@@ -59,7 +61,7 @@ const Sort: VoidComponent<{
     );
 };
 
-const SortOverlay: VoidComponent<{ name: string }> = (props) => {
+const ItemOverlay: VoidComponent<{ name: string }> = (props) => {
     return (
         <div
             class={classNames(
@@ -93,4 +95,4 @@ const SortOverlay: VoidComponent<{ name: string }> = (props) => {
     );
 };
 
-export {Sort, SortOverlay}
+export {Item, ItemOverlay}

@@ -16,8 +16,8 @@ import Big, {div} from "big.js";
 import Icon from "~/components/ui/icon";
 import {classNames} from "~/lib/utils";
 import Dialog, {Close} from '@corvu/dialog'
-import {Group, GroupOverlay} from "~/components/ui/sortable/group";
-import {Item, ItemOverlay} from "~/components/ui/sortable/item";
+import {Group, GroupOverlay} from "~/components/sortable/group";
+import {Item, ItemOverlay} from "~/components/sortable/item";
 import {Entity, ORDER_DELTA} from "~/lib/types";
 import Resizable from '@corvu/resizable'
 
