@@ -104,13 +104,13 @@ const Group: VoidComponent<{
 
                 <Show<boolean> when={!hideHeader()}>
                     <div
-                        class="column-header cursor-move rounded-b-lg  bg-gray-50" {...sortable.dragActivators}>
+                        class="column-header  rounded-b-lg  bg-gray-50" {...sortable.dragActivators}>
                         <div
                             class="flex justify-between items-center px-1  uppercase text-base h-7 text-gray-500 truncate">
                             <div class="flex justify-start items-center space-x-1">
                                 <Show<boolean>
                                     fallback={
-                                        <button as="button" onClick={handleNewItem}>
+                                        <button as="button" onClick={removeGroup}>
                                             <span><Icon name="SquareX" class="p-0.75 stroke-red-300"/></span>
                                         </button>
                                     }
@@ -120,10 +120,11 @@ const Group: VoidComponent<{
 
                                 <span>{props.name}</span>
                             </div>
-
-                            <button as="button" onClick={handleNewItem}>
+                            <div class="flex justify-end items-center space-x-1">
+                            <button onClick={handleNewItem} as="button" >
                                 <span><Icon name="Plus" class="p-1"/></span>
                             </button>
+                            </div>
                         </div>
                     </div>
                 </Show>
