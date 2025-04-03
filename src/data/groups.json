@@ -2,16 +2,15 @@
   {
 
     "id": 1,
-    "name": "Main",
-    "order": "1000",
+    "name": "Section 1",
     "title": "Main",
     "type": "group",
     "active": true
   },
   {
     "id": 2,
-    "name": "Main",
-    "title": "Main",
+    "name": "Section 2",
+    "title": "Section",
     "type": "group",
     "active": true
   }

@@ -40,10 +40,12 @@ const sortByOrder = (entities: Entity[]) => {
 };
 
 export const SortableSections: Component<{
+    isDraggable: boolean;
     hideHeader: boolean;
     addNewGroup: (e: any) => any;
 }> = props => {
 
+    const isDraggable = () => props.isDraggable;
     const hideHeader = () => props.hideHeader;
 
     const [entities, setEntities] = createStore<Record<Id, Entity | undefined>>();
@@ -263,7 +265,6 @@ export const SortableSections: Component<{
         if (!entities) return;
 
         console.log(id, "remove")
-        let arr = Object.values(entities).filter((item) => item?.id !== id);
 
         setEntities(id, undefined)
 
@@ -271,6 +272,7 @@ export const SortableSections: Component<{
         console.log("entities", entities)
 
     }
+
 
 
     return (
@@ -282,7 +284,7 @@ export const SortableSections: Component<{
                     onDragOver={onDragOver}
                     onDragEnd={onDragEnd}
                     collisionDetector={closestEntity}
-                    style={{"touch-action": "none"}}
+
 
                 >
                     <DragDropSensors/>
@@ -305,6 +307,8 @@ export const SortableSections: Component<{
                                             items={groupItems(group.id)}
                                             addItem={handleNewItem}
                                             removeItem={handleRemoveItem}
+                                            removeGroup={handleRemoveItem}
+                                            isDraggable={isDraggable()}
                                             hideHeader={hideHeader()}
                                         />
 

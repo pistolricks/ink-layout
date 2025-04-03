@@ -12,7 +12,8 @@ const Group: VoidComponent<{
     name: string;
     title?: string;
     items: Item[];
-    hideHeader?: boolean;
+    hideHeader: boolean;
+    isDraggable: boolean;
     addItem: (e: any) => any;
     removeItem: (e: any) => any
     removeGroup: (e: any) => any
@@ -27,6 +28,7 @@ const Group: VoidComponent<{
 
     const [getSortedItemIds, setSortedItemIds] = createSignal(items().map((item) => item.id))
 
+    const isDraggable = () => props.isDraggable;
     const hideHeader = () => props.hideHeader ?? false;
 
     const [getSelectedId, setSelectedId] = createSignal<Id>(0)
@@ -85,9 +87,7 @@ const Group: VoidComponent<{
 
     const filtered = createMemo(() => items().filter((item) => item.active === true))
 
-   // createEffect(() => console.log("filtered", filtered(), getSizes(), sizes()))
-
-
+    // createEffect(() => console.log("filtered", filtered(), getSizes(), sizes()))
 
 
     return (
@@ -104,7 +104,7 @@ const Group: VoidComponent<{
 
                 <Show<boolean> when={!hideHeader()}>
                     <div
-                        class="column-header  rounded-b-lg  bg-gray-50" {...sortable.dragActivators}>
+                        class="column-header rounded-b-lg  bg-gray-50" {...sortable.dragActivators}>
                         <div
                             class="flex justify-between items-center px-1  uppercase text-base h-7 text-gray-500 truncate">
                             <div class="flex justify-start items-center space-x-1">
@@ -115,15 +115,21 @@ const Group: VoidComponent<{
                                         </button>
                                     }
                                     when={filtered()?.length > 0}>
-                                    <span><Icon name="Grip" class="p-1"/></span>
+                                    <span>
+                                        <Icon
+                                            name="Grip"
+                                            style={{"touch-action": "none"}}
+                                            class="sortable p-1 size-6 stroke-gray-500"
+                                        />
+                                    </span>
                                 </Show>
 
                                 <span>{props.name}</span>
                             </div>
                             <div class="flex justify-end items-center space-x-1">
-                            <button onClick={handleNewItem} as="button" >
-                                <span><Icon name="Plus" class="p-1"/></span>
-                            </button>
+                                <button onClick={handleNewItem} as="button">
+                                    <span><Icon name="Plus" class="p-1"/></span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -139,10 +145,14 @@ const Group: VoidComponent<{
                                             initialSize={1 / filtered().length}
                                             class="rounded-lg bg-corvu-100 w-full"
                                         >
-                                            <Item id={item.id} name={item.name} group={item.group}
-                                                  remove={() => removeItem(item.id)}
-                                                  hideHeader={hideHeader()}
-                                                  count={filtered().length}
+                                            <Item
+                                                id={item.id}
+                                                name={item.name}
+                                                group={item.group}
+                                                remove={() => removeItem(item.id)}
+                                                isDraggable={isDraggable()}
+                                                hideHeader={hideHeader()}
+                                                count={filtered().length}
                                             />
                                         </Resizable.Panel>
                                         <Show<boolean> when={items().length - 1 !== index()}>

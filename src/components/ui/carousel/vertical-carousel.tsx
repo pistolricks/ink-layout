@@ -9,7 +9,8 @@ import {
     CarouselPrevious
 } from "~/components/ui/carousel"
 import "./style.css"
-export function VerticalCarousel() {
+export function VerticalCarousel(props: {count: number}) {
+    const count = () => props.count;
     return (
         <Carousel
             opts={{
@@ -20,7 +21,7 @@ export function VerticalCarousel() {
         >
             <div class="embla__viewport">
             <CarouselContent class="embla__container">
-                <Index each={Array.from({ length: 5 })}>
+                <Index each={Array.from({ length: count() })}>
                     {(_, index) => (
                         <CarouselItem class="embla__slide">
 

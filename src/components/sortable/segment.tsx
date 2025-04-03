@@ -15,7 +15,7 @@ const Segment: Component<PROPS> = props => {
 
     return (
         <div class="">
-            <VerticalCarousel/>
+            <VerticalCarousel count={count()}/>
         </div>
     );
 };

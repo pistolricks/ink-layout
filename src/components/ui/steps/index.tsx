@@ -12,12 +12,13 @@ import {A} from "@solidjs/router";
 
 const Steps: Component<{}> = props => {
 
+    const [getIsDraggable, setIsDraggable] = createSignal(true);
     const [getHideHeader, setHideHeader] = createSignal(false);
 
     const stepsData = createMemo(() => [
-        {title: "Sections", component: SortableSections, data: {hideHeader: getHideHeader()}},
-        {title: "Step 2", component: SortableSections, data: {hideHeader: getHideHeader()}},
-        {title: "Step 3", component: SortableSections, data: {hideHeader: getHideHeader()}},
+        {title: "Sections", component: SortableSections, data: {isDraggable: getIsDraggable(), hideHeader: getHideHeader()}},
+        {title: "Step 2", component: SortableSections, data: {isDraggable: getIsDraggable(), hideHeader: getHideHeader()}},
+        {title: "Step 3", component: SortableSections, data: {isDraggable: getIsDraggable(), hideHeader: getHideHeader()}},
     ]);
 
     const service = useMachine(steps.machine, {
@@ -38,23 +39,22 @@ const Steps: Component<{}> = props => {
                     <ul class="flex items-baseline space-x-3">
                         <li>
                             <A
-                                href={"/design/page"}
+                                href={"/design/page/1"}
                                 type="button"
                                 class={classNames(
-                                    getHideHeader() ? "bg-gray-200 text-blue-500/20" : " text-blue-500 border border-blue-500",
                                     "flex items-center justify-center size-7 text-blue-500 transition rounded-full hover:bg-gray-500/5 focus:bg-blue-500/10 focus:outline-none")}>
                                 <Icon name="House" class="p-1 size-7"/>
                             </A>
                         </li>
                         <li>
-                            <A
-                                href={"/design/page/1"}
+                            <button
+                                onClick={() => setIsDraggable((p) => !p)}
                                 type="button"
                                 class={classNames(
-                                    getHideHeader() ? "bg-gray-200 text-blue-500/20" : " text-blue-500 border border-blue-500",
+                                    !getIsDraggable() ? "bg-gray-200 text-blue-500/20" : " text-blue-500 border border-blue-500",
                                     "flex items-center justify-center size-7 text-blue-500 transition rounded-full hover:bg-gray-500/5 focus:bg-blue-500/10 focus:outline-none")}>
                                 <Icon name="LayoutGrid" class="p-1 size-7"/>
-                            </A>
+                            </button>
                         </li>
                         <li>
                             <button
