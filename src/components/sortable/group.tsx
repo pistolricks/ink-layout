@@ -15,6 +15,7 @@ const Group: VoidComponent<{
     hideHeader?: boolean;
     addItem: (e: any) => any;
     removeItem: (e: any) => any
+    removeGroup: (e: any) => any
 }> = (
     props
 ) => {
@@ -39,6 +40,19 @@ const Group: VoidComponent<{
         setSelectedId(id)
         if (isSelected(id)) {
             props.removeItem(id)
+        }
+    }
+
+    const [getSelectedGroupId, setSelectedGroupId] = createSignal<Id>(0)
+
+    const selectedGroupId = createMemo(() => getSelectedGroupId())
+
+    const isSelectedGroup = createSelector<Id>(selectedGroupId)
+
+    const removeGroup = (id: Id) => {
+        setSelectedGroupId(id)
+        if (isSelectedGroup(id)) {
+            props.removeGroup(id)
         }
     }
 
@@ -88,16 +102,39 @@ const Group: VoidComponent<{
                         "overflow-hidden h-full")}
             >
 
+                <Show<boolean> when={!hideHeader()}>
+                    <div
+                        class="column-header cursor-move rounded-b-lg  bg-gray-50" {...sortable.dragActivators}>
+                        <div
+                            class="flex justify-between items-center px-1  uppercase text-base h-7 text-gray-500 truncate">
+                            <div class="flex justify-start items-center space-x-1">
+                                <Show<boolean>
+                                    fallback={
+                                        <button as="button" onClick={handleNewItem}>
+                                            <span><Icon name="SquareX" class="p-0.75 stroke-red-300"/></span>
+                                        </button>
+                                    }
+                                    when={filtered()?.length > 0}>
+                                    <span><Icon name="Grip" class="p-1"/></span>
+                                </Show>
 
+                                <span>{props.name}</span>
+                            </div>
+
+                            <button as="button" onClick={handleNewItem}>
+                                <span><Icon name="Plus" class="p-1"/></span>
+                            </button>
+                        </div>
+                    </div>
+                </Show>
                 <div class="flex justify-center items-center h-full min-w-full">
                     <SortableProvider ids={sortedItemIds()} class="size-full">
-
-
                         <Resizable onSizesChange={setSizes} class="min-w-full h-full" orientation="horizontal">
                             <For<Item[]> each={filtered()}>
                                 {(item, index) => (
                                     <>
                                         <Resizable.Panel
+                                            minSize={0.15}
                                             initialSize={1 / filtered().length}
                                             class="rounded-lg bg-corvu-100 w-full"
                                         >
@@ -122,21 +159,7 @@ const Group: VoidComponent<{
                         </Resizable>
                     </SortableProvider>
                 </div>
-                <Show<boolean> when={!hideHeader()}>
-                    <div
-                        class="column-header cursor-move rounded-b-lg  bg-gray-50" {...sortable.dragActivators}>
-                        <div
-                            class="flex justify-between items-center px-1  uppercase text-base h-7 text-gray-500 truncate">
-                            <div class="flex justify-start items-center">
-                                <span><Icon name="Grip" class="p-1"/></span>
-                                <span>{props.name}</span>
-                            </div>
-                            <button as="button" onClick={handleNewItem}>
-                                <span><Icon name="Plus" class="p-1"/></span>
-                            </button>
-                        </div>
-                    </div>
-                </Show>
+
             </div>
         </>
     );
@@ -147,16 +170,23 @@ const GroupOverlay: VoidComponent<{ name: string; title?: string; items: Item[] 
 ) => {
     return (
         <div class="rounded-lg border border-gray-300">
+            <div
+                class="column-header cursor-move rounded-b-lg  bg-gray-50">
+                <div
+                    class="flex justify-between items-center px-1  uppercase text-base h-7 text-gray-500 truncate">
+                    <div class="flex justify-start items-center">
+                        <span><Icon name="Grip" class="p-1"/></span>
+                        <span>{props.name}</span>
+                    </div>
+                    <button as="button">
+                        <span><Icon name="Plus" class="p-1"/></span>
+                    </button>
+                </div>
+            </div>
             <div class="flex justify-center items-center bg-gray-100">
                 <For<Item[]> each={props.items}>
                     {(item) => <ItemOverlay name={item.name}/>}
                 </For>
-            </div>
-            <div class="column-header cursor-move rounded-b-lg border-gray-300">
-                <div class="flex justify-between items-center px-2  uppercase text-xs h-7 text-gray-500">
-                    <span>{props.title} {props.name}</span>
-                    <span><Icon name="Grip" class="p-0.5"/></span>
-                </div>
             </div>
         </div>
     );

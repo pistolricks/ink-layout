@@ -8,7 +8,7 @@ import {
     CarouselNext,
     CarouselPrevious
 } from "~/components/ui/carousel"
-
+import "./style.css"
 export function VerticalCarousel() {
     return (
         <Carousel
@@ -16,25 +16,25 @@ export function VerticalCarousel() {
                 align: "start"
             }}
             orientation="vertical"
-            class="w-full max-w-xs overflow-y-auto"
+            class="embla"
         >
-            <CarouselContent class="-mt-1 min-h-[200px]">
+            <div class="embla__viewport">
+            <CarouselContent class="embla__container">
                 <Index each={Array.from({ length: 5 })}>
                     {(_, index) => (
-                        <CarouselItem class="pt-1 basis-1 h-full">
-                            <div class="p-1">
-                                <Card>
-                                    <CardContent class="flex items-center justify-center p-6">
+                        <CarouselItem class="embla__slide">
+
+                                <Card class="embla__slide__number rounded-none">
+
                                         <span class="text-3xl font-semibold">{index + 1}</span>
-                                    </CardContent>
+
                                 </Card>
-                            </div>
+
                         </CarouselItem>
                     )}
                 </Index>
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            </div>
         </Carousel>
     )
 }

@@ -3,6 +3,7 @@ import {createSortable, Id} from "@thisbeyond/solid-dnd";
 import {div} from "big.js";
 import {classNames} from "~/lib/utils.ts";
 import Segment from "~/components/sortable/segment.tsx";
+import Icon from "~/components/ui/icon.tsx";
 
 
 const Item: VoidComponent<{
@@ -26,34 +27,43 @@ const Item: VoidComponent<{
         <>
             <div
                 use:sortable
+                classList={{"opacity-25": sortable.isActiveDraggable}}
                 class={classNames(
                     hideHeader() ? "" : "border border-b",
-                    "sortable w-full",
+                    "w-full sortable",
                 )}
-                classList={{"opacity-25": sortable.isActiveDraggable}}
-                style={{"touch-action": "none"}}
-            >
-                <Show<boolean> when={!hideHeader()}>
-                    <div class="rounded-t-lg h-full w-full flex items-start justify-start flex-col  rounded-xs">
-                        <div
-                            class="h-full w-full flex items-center justify-start relative p-1 border-b shadow dark:border-gray-800">
-                            <div class=" flex items-center justify-center">
 
-                                <button type="button" onClick={props.remove}
-                                        class="border border-red-400 m-1 w-4 h-4 rounded-full"/>
+            >
+                <div class="h-full  w-full bg-blue-200 relative">
+                    <Segment count={count()}/>
+                </div>
+                <Show<boolean> when={!hideHeader()}>
+                    <div
+                        class=" rounded-t-lg h-full w-full flex items-start justify-between flex-col  rounded-xs">
+                        <div
+                            class="h-full w-full flex items-center justify-between relative p-1 border-b shadow dark:border-gray-800">
+                            <div class="flex items-center justify-center text-gray-500 truncate space-x-1">
+
+
+                                <button type="button" onClick={props.remove}>
+                                    <Icon name="SquareX" stroke-width={1.5} class="size-6 stroke-red-300 p-0.5"/>
+                                </button>
+
                                 <span class="font-sans uppercase text-base text-gray-500 dark:text-gray-400 truncate">
                                  {props.name}
                             </span>
                             </div>
-                            <div class="w-full flex items-center justify-center absolute left-0">
-
+                            <div
+                                class="w-1/2  h-6 flex items-center justify-end">
+                                <span class="">
+                                    <Icon
+                                        name="Grip"
+                                        style={{"touch-action": "none"}}
+                                        class="sortable p-1 size-6 stroke-gray-500"/></span>
                             </div>
                         </div>
                     </div>
                 </Show>
-                <div class="h-full  w-full bg-blue-200">
-                    <Segment count={count()}/>
-                </div>
             </div>
 
 
@@ -70,25 +80,32 @@ const ItemOverlay: VoidComponent<{ name: string }> = (props) => {
                 "bg-white"
             )}
         >
-            <div class="rounded-t-lg h-full w-full flex items-start justify-start flex-col  rounded-xs">
-                <div
-                    class="h-full w-full flex items-center justify-start relative p-1 border-b shadow dark:border-gray-800">
-                    <div class=" flex items-center justify-center">
 
-                        <button type={'button'}
-                                class="border border-red-400 m-1 w-4 h-4 rounded-full"/>
+            <div class="h-full  w-full bg-blue-200">
+                <Segment count={8}/>
+            </div>
+            <div
+                class=" rounded-t-lg h-full w-full flex items-start justify-between flex-col  rounded-xs">
+                <div
+                    class="h-full w-full flex items-center justify-between relative p-1 border-b shadow dark:border-gray-800">
+                    <div class="flex items-center justify-center text-gray-500 truncate space-x-1">
+
+
+                        <button type="button" >
+                            <Icon name="SquareX" stroke-width={1.5} class="size-6 stroke-red-300 p-0.5"/>
+                        </button>
+
                         <span class="font-sans uppercase text-base text-gray-500 dark:text-gray-400 truncate">
                                  {props.name}
                             </span>
                     </div>
-                    <div class="w-full flex items-center justify-center absolute left-0">
-
+                    <div
+                        class="w-4/6  h-6 flex items-center justify-end">
+                                <span class="">
+                                    <Icon
+                                        name="Grip"
+                                        class="sortable p-1 size-6 stroke-gray-500"/></span>
                     </div>
-                </div>
-            </div>
-            <div class="h-full min-h-[100px] w-full bg-blue-200">
-                <div class="p-4">
-
                 </div>
             </div>
         </div>

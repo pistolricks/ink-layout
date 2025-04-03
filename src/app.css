@@ -1,95 +1,98 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+:root {
+  --background-rgb: 255, 255, 255;
+  --foreground-rgb: 0, 0, 0;
+}
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --color-background: 0 0% 100%;
+    --color-foreground: 240 10% 3.9%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --color-muted: 240 4.8% 95.9%;
+    --color-muted-foreground: 240 3.8% 46.1%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --color-popover: 0 0% 100%;
+    --color-popover-foreground: 240 10% 3.9%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    --color-border: 240 5.9% 90%;
+    --color-input: 240 5.9% 90%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --color-card: 0 0% 100%;
+    --color-card-foreground: 240 10% 3.9%;
 
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
+    --color-primary: 240 5.9% 10%;
+    --color-primary-foreground: 0 0% 98%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --color-secondary: 240 4.8% 95.9%;
+    --color-secondary-foreground: 240 5.9% 10%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --color-accent: 240 4.8% 95.9%;
+    --color-accent-foreground: 240 5.9% 10%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --color-destructive: 0 84.2% 60.2%;
+    --color-destructive-foreground: 0 0% 98%;
 
-    --info: 204 94% 94%;
-    --info-foreground: 199 89% 48%;
+    --color-info: 204 94% 94%;
+    --color-info-foreground: 199 89% 48%;
 
-    --success: 149 80% 90%;
-    --success-foreground: 160 84% 39%;
+    --color-success: 149 80% 90%;
+    --color-success-foreground: 160 84% 39%;
 
-    --warning: 48 96% 89%;
-    --warning-foreground: 25 95% 53%;
+    --color-warning: 48 96% 89%;
+    --color-warning-foreground: 25 95% 53%;
 
-    --error: 0 93% 94%;
-    --error-foreground: 0 84% 60%;
+    --color-error: 0 93% 94%;
+    --color-error-foreground: 0 84% 60%;
 
-    --ring: 240 5.9% 10%;
+    --color-ring: 240 5.9% 10%;
 
-    --radius: 0.5rem;
+    --color-radius: 0.5rem;
   }
 
   .dark,
   [data-kb-theme="dark"] {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --color-background: 240 10% 3.9%;
+    --color-foreground: 0 0% 98%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --color-muted: 240 3.7% 15.9%;
+    --color-muted-foreground: 240 5% 64.9%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --color-accent: 240 3.7% 15.9%;
+    --color-accent-foreground: 0 0% 98%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --color-popover: 240 10% 3.9%;
+    --color-popover-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --color-border: 240 3.7% 15.9%;
+    --color-input: 240 3.7% 15.9%;
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --color-card: 240 10% 3.9%;
+    --color-card-foreground: 0 0% 98%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --color-primary: 0 0% 98%;
+    --color-primary-foreground: 240 5.9% 10%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --color-secondary: 240 3.7% 15.9%;
+    --color-secondary-foreground: 0 0% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --color-destructive: 0 62.8% 30.6%;
+    --color-destructive-foreground: 0 0% 98%;
 
-    --info: 204 94% 94%;
-    --info-foreground: 199 89% 48%;
+    --color-info: 204 94% 94%;
+    --color-info-foreground: 199 89% 48%;
 
-    --success: 149 80% 90%;
-    --success-foreground: 160 84% 39%;
+    --color-success: 149 80% 90%;
+    --color-success-foreground: 160 84% 39%;
 
-    --warning: 48 96% 89%;
-    --warning-foreground: 25 95% 53%;
+    --color-warning: 48 96% 89%;
+    --color-warning-foreground: 25 95% 53%;
 
-    --error: 0 93% 94%;
-    --error-foreground: 0 84% 60%;
+    --color-error: 0 93% 94%;
+    --color-error-foreground: 0 84% 60%;
 
-    --ring: 240 4.9% 83.9%;
+    --color-ring: 240 4.9% 83.9%;
 
     --radius: 0.5rem;
   }
@@ -97,13 +100,13 @@
 
 @layer base {
   * {
-    @apply border-border;
+
   }
   body {
-    @apply bg-background text-foreground;
+
     font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+            "rlig" 1,
+            "calt" 1;
   }
 }
 
@@ -113,7 +116,7 @@
   }
 
   .step:before {
-    @apply absolute w-9 h-9 bg-muted rounded-full font-mono font-medium text-center text-base inline-flex items-center justify-center -indent-px border-4 border-background;
+    @apply absolute w-9 h-9  rounded-full font-mono font-medium text-center text-base inline-flex items-center justify-center -indent-px border-4 ;
     @apply ml-[-50px] mt-[-4px];
     content: counter(step);
   }
@@ -133,15 +136,45 @@
   border-radius: 9999px;
   border: 4px solid transparent;
   background-clip: content-box;
-  @apply bg-accent;
+
 }
 
 ::-webkit-scrollbar-corner {
   display: none;
 }
 
-.embla__slide {
-  flex: 0 0 auto; /* Adapt slide size to its content */
-  min-width: 0;
-  max-width: 100%; /* Prevent from growing larger than viewport */
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-rgb: 0, 0, 0;
+    --foreground-rgb: 255, 255, 255;
+  }
+}
+
+body {
+  background: rgb(var(--background-rgb));
+  color: rgb(var(--foreground-rgb));
+}
+
+
+.column-header {
+  --tw-bg-opacity: 1;
+  --tw-border-opacity: 1;
+  border-top-width: 0px;
+  cursor: move;
+  font-weight: 200;
+  padding: .1rem;
+  text-align: center
+}
+
+.sortable {
+  --tw-bg-opacity: 1;
+  cursor: move;
+  font-weight: 500;
+  text-align: center;
+  --tw-text-opacity: 1;
+  color: rgba(255,255,255,var(--tw-text-opacity));
+  white-space: normal;
+
 }
