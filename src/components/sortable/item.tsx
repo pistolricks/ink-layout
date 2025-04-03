@@ -25,6 +25,7 @@ const Item: VoidComponent<{
 
     return (
         <>
+
             <div
                 use:sortable
                 classList={{"opacity-25": sortable.isActiveDraggable}}
@@ -34,7 +35,7 @@ const Item: VoidComponent<{
                 )}
 
             >
-                <div class="h-full  w-full bg-blue-200 relative">
+                <div class=" sortable w-full bg-blue-200 relative">
                     <Segment count={count()}/>
                 </div>
                 <Show<boolean> when={!hideHeader()}>

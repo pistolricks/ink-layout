@@ -1,5 +1,5 @@
 import {
-    closestCenter,
+    closestCenter, closestCorners,
     CollisionDetector,
     DragDropProvider,
     DragDropSensors,
@@ -10,16 +10,14 @@ import {
     Id,
     SortableProvider,
 } from "@thisbeyond/solid-dnd";
-import {batch, Component, createEffect, createMemo, createSignal, For, onMount, Show} from "solid-js";
+import {batch, Component, createMemo, For, onMount, Show} from "solid-js";
 import {createStore} from "solid-js/store";
 import Big, {div} from "big.js";
 import Icon from "~/components/ui/icon";
 import {classNames} from "~/lib/utils";
-import Dialog, {Close} from '@corvu/dialog'
 import {Group, GroupOverlay} from "~/components/sortable/group";
 import {Item, ItemOverlay} from "~/components/sortable/item";
 import {Entity, ORDER_DELTA} from "~/lib/types";
-import Resizable from '@corvu/resizable'
 
 declare module "solid-js" {
     namespace JSX {
@@ -31,12 +29,12 @@ declare module "solid-js" {
 
 
 const sortByOrder = (entities: Entity[]) => {
-    if(!entities)return;
+    if (!entities) return;
     const sorted = entities.map((item) => {
-        if(!item)return;
+        if (!item) return;
         return ({order: new Big(item.order), item})
     });
-    if(!sorted)return;
+    if (!sorted) return;
     sorted.sort((a, b) => a.order.cmp(b.order));
     return sorted.map((entry) => entry.item);
 };
@@ -48,7 +46,7 @@ export const SortableSections: Component<{
 
     const hideHeader = () => props.hideHeader;
 
-    const [entities, setEntities] = createStore<Record<Id, Entity|undefined>>();
+    const [entities, setEntities] = createStore<Record<Id, Entity | undefined>>();
 
     let nextOrder = 0;
 
@@ -94,10 +92,10 @@ export const SortableSections: Component<{
     onMount(setup);
 
     const groups = createMemo(() => {
-        if(!entities)return;
-            return sortByOrder(
-                Object.values(entities).filter((item): item is Group => item?.type === "group")
-            ) as Group[]
+        if (!entities) return;
+        return sortByOrder(
+            Object.values(entities).filter((item): item is Group => item?.type === "group")
+        ) as Group[]
     })
 
     const groupIds = () => groups().map((group) => group.id);
@@ -105,13 +103,13 @@ export const SortableSections: Component<{
     const groupOrders = () => groups().map((group) => group.order);
 
     const groupItems = (groupId?: Id) => {
-        if(!groupId)return;
-        if(!entities)return;
-            return sortByOrder(
-                Object.values(entities).filter(
-                    (entity) => entity?.type === "item" && entity.group === groupId
-                )
-            ) as Item[];
+        if (!groupId) return;
+        if (!entities) return;
+        return sortByOrder(
+            Object.values(entities).filter(
+                (entity) => entity?.type === "item" && entity.group === groupId
+            )
+        ) as Item[];
     }
 
     const groupItemIds = (groupId: Id) =>
@@ -124,7 +122,7 @@ export const SortableSections: Component<{
         sortable.data.type === "group";
 
     const closestEntity: CollisionDetector = (draggable, droppables, context) => {
-        const closestGroup = closestCenter(
+        const closestGroup = closestCorners(
             draggable,
             droppables.filter((droppable) => isSortableGroup(droppable)),
             context
@@ -132,7 +130,7 @@ export const SortableSections: Component<{
         if (isSortableGroup(draggable)) {
             return closestGroup;
         } else if (closestGroup) {
-            const closestItem = closestCenter(
+            const closestItem = closestCorners(
                 draggable,
                 droppables.filter(
                     (droppable) =>
@@ -249,7 +247,7 @@ export const SortableSections: Component<{
     }
 
     const handleNewItem = (e: { name: string; group: Id }) => {
-        if(!entities)return;
+        if (!entities) return;
         let amt = Object.values(entities).filter(
             (entity) => entity?.type === "item" && entity.group === e.group
         ).length;
@@ -262,13 +260,12 @@ export const SortableSections: Component<{
 
 
     const handleRemoveItem = (id: Id) => {
-        if(!entities)return;
+        if (!entities) return;
 
         console.log(id, "remove")
         let arr = Object.values(entities).filter((item) => item?.id !== id);
 
         setEntities(id, undefined)
-
 
 
         console.log("entities", entities)
@@ -332,9 +329,9 @@ export const SortableSections: Component<{
                     </div>
                     <DragOverlay>
                         {(draggable: Draggable) => {
-                            if(!entities)return;
-                                const entity = entities[draggable.id];
-                                if(!entity)return;
+                            if (!entities) return;
+                            const entity = entities[draggable.id];
+                            if (!entity) return;
                             return isSortableGroup(draggable) ? (
                                 <GroupOverlay name={entity.name} title={entity?.title} items={groupItems(entity.id)}/>
                             ) : (

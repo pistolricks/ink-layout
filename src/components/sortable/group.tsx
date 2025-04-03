@@ -110,7 +110,7 @@ const Group: VoidComponent<{
                             <div class="flex justify-start items-center space-x-1">
                                 <Show<boolean>
                                     fallback={
-                                        <button as="button" onClick={removeGroup}>
+                                        <button as="button" onClick={() => removeGroup(props.id)}>
                                             <span><Icon name="SquareX" class="p-0.75 stroke-red-300"/></span>
                                         </button>
                                     }
