@@ -31,6 +31,7 @@ declare module "solid-js" {
 
 
 const sortByOrder = (entities: Entity[]) => {
+    if(!entities)return;
     const sorted = entities.map((item) => ({order: new Big(item.order), item}));
     sorted.sort((a, b) => a.order.cmp(b.order));
     return sorted.map((entry) => entry.item);
@@ -43,7 +44,7 @@ export const SortableSections: Component<{
 
     const hideHeader = () => props.hideHeader;
 
-    const [entities, setEntities] = createStore<Record<Id, Entity>>();
+    const [entities, setEntities] = createStore<Record<Id, Entity|undefined>>();
 
     let nextOrder = 0;
 
@@ -88,23 +89,24 @@ export const SortableSections: Component<{
 
     onMount(setup);
 
-    const groups = createMemo(() =>
-        sortByOrder(
-            Object.values(entities).filter((item) => item.type === "group")
-        ) as Group[]);
+    const groups = createMemo(() => {
+        if(!entities)return;
+            return sortByOrder(
+                Object.values(entities).filter((item): item is Group => item?.type === "group")
+            ) as Group[]
+    })
 
     const groupIds = () => groups().map((group) => group.id);
 
     const groupOrders = () => groups().map((group) => group.order);
 
     const groupItems = (groupId: Id) => {
-        let gi = sortByOrder(
-            Object.values(entities).filter(
-                (entity) => entity.type === "item" && entity.group === groupId
-            )
-        ) as Item[];
-
-        return gi;
+        if(!entities)return;
+            return sortByOrder(
+                Object.values(entities).filter(
+                    (entity) => entity?.type === "item" && entity.group === groupId
+                )
+            ) as Item[];
     }
 
     const groupItemIds = (groupId: Id) =>
@@ -233,8 +235,8 @@ export const SortableSections: Component<{
 
 
     const handleNewGroup = () => {
-        let amt = Object.values(entities).filter((group) => group.type === "group").length;
-        let newA = amt + 1;
+        if (!entities) return;
+        let newA = Object.values(entities).filter((group) => group?.type === "group").length + 1;
 
         let name = `Section ${newA}`
 
@@ -242,31 +244,29 @@ export const SortableSections: Component<{
     }
 
     const handleNewItem = (e: { name: string; group: Id }) => {
-
+        if(!entities)return;
         let amt = Object.values(entities).filter(
-            (entity) => entity.type === "item" && entity.group === e.group
+            (entity) => entity?.type === "item" && entity.group === e.group
         ).length;
         let gh = e.group * 100;
         let newA = (gh + amt + 1);
         addItem(newA, e.name, e.group);
-        return Object.values(entities).find((entity) => entity.id === newA) as Item
+        return Object.values(entities).find((entity) => entity?.id === newA) as Item
 
     }
 
 
     const handleRemoveItem = (id: Id) => {
-        let item = Object.values(entities).find((item) => item.id === id) as Item;
+        if(!entities)return;
 
-        setEntities(item.id, {
-            id: item.id,
-            name: item.name,
-            group: item.group,
-            color: item.color,
-            type: "item",
-            order: item.order,
-            active: false
-        });
+        console.log(id, "remove")
+        let arr = Object.values(entities).filter((item) => item?.id !== id);
 
+        setEntities(id, undefined)
+
+
+
+        console.log("entities", entities)
 
     }
 
@@ -280,7 +280,7 @@ export const SortableSections: Component<{
                     onDragOver={onDragOver}
                     onDragEnd={onDragEnd}
                     collisionDetector={closestEntity}
-                    style={{ "touch-action": "none" }}
+                    style={{"touch-action": "none"}}
 
                 >
                     <DragDropSensors/>
@@ -296,15 +296,15 @@ export const SortableSections: Component<{
                                 {(group, index) => (
                                     <>
 
-                                    <Group
-                                        id={group.id}
-                                        name={group.name}
-                                        title={group.title}
-                                        items={groupItems(group.id)}
-                                        addItem={handleNewItem}
-                                        removeItem={handleRemoveItem}
-                                        hideHeader={hideHeader()}
-                                    />
+                                        <Group
+                                            id={group.id}
+                                            name={group.name}
+                                            title={group.title}
+                                            items={groupItems(group.id)}
+                                            addItem={handleNewItem}
+                                            removeItem={handleRemoveItem}
+                                            hideHeader={hideHeader()}
+                                        />
 
                                     </>
                                 )}
@@ -327,7 +327,9 @@ export const SortableSections: Component<{
                     </div>
                     <DragOverlay>
                         {(draggable: Draggable) => {
-                            const entity = entities[draggable.id];
+                            if(!entities)return;
+                                const entity = entities[draggable.id];
+                                if(!entity)return;
                             return isSortableGroup(draggable) ? (
                                 <GroupOverlay name={entity.name} title={entity?.title} items={groupItems(entity.id)}/>
                             ) : (
@@ -341,93 +343,3 @@ export const SortableSections: Component<{
         </>
     );
 };
-
-const RemoveItemInnerModal: Component<{
-    id: Id;
-    remove: (id: Id) => void;
-}> = props => {
-
-    const id = () => props.id;
-
-    return (
-        <div class="">
-            <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
-
-            </div>
-            <div class="sm:flex sm:items-start">
-                <div
-                    class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
-                    <svg class="size-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                         stroke="currentColor" aria-hidden="true" data-slot="icon">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
-                    </svg>
-                </div>
-                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                    <h3 class="text-base font-semibold text-gray-900" id="modal-title">Delete Item?</h3>
-                </div>
-            </div>
-            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-
-                <Close onClick={() => props.remove(id())} type="button"
-                       class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto">Remove</Close>
-
-
-                <Dialog.Trigger as="button" type="button"
-                                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</Dialog.Trigger>
-            </div>
-        </div>
-    );
-};
-
-const AddItemInnerModal: Component<{
-    id: Id;
-    add: ({
-              name: string,
-              group: Id
-          }) => any;
-}> = props => {
-
-    const id = () => props.id;
-
-    const [getName, setName] = createSignal("")
-
-
-    createEffect(() => {
-        console.log(getName())
-    })
-
-    return (
-
-        <div class="bg-white shadow sm:rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-base font-semibold text-gray-900">Create Section Item</h3>
-                <div class="mt-2 max-w-xl text-sm text-gray-500">
-                    <p>Change the email address you want associated with your account.</p>
-                </div>
-                <div class="mt-5 sm:flex sm:items-center">
-                    <div class="w-full sm:max-w-xl">
-                        <input onInput={(e: InputEvent) => setName((e.target as HTMLInputElement).value)} type="text"
-                               name="name" id="name" aria-label="Name"
-                               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                               placeholder="name"/>
-                    </div>
-                </div>
-                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-
-                    <Close onClick={() => props.add({
-                        name: getName(),
-                        group: id()
-                    })} type="button"
-                           class="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto">Create</Close>
-
-
-                    <Dialog.Trigger as="button" type="button"
-                                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</Dialog.Trigger>
-                </div>
-            </div>
-        </div>
-
-    );
-};
-

@@ -6,6 +6,26 @@ import {Id} from "@thisbeyond/solid-dnd";
 
 export const ORDER_DELTA = 1000;
 
+
+export interface BaseProps {
+    id: number;
+    name: string;
+    title?: string;
+    type: "group" | "item";
+    order: string;
+    color?: string;
+    active: boolean;
+}
+
+export interface GroupProps extends BaseProps {
+    type: "group";
+}
+
+export interface ItemProps extends BaseProps {
+    type: "item";
+    group: number;
+}
+
 export interface Base {
     id: Id;
     name: string;
@@ -25,7 +45,7 @@ export interface Item extends Base {
     group: Id;
 }
 
-export type Entity = Group | Item;
+export type Entity = Group | Item | undefined;
 
 export type Segment = {
     id: Id;

@@ -9,6 +9,7 @@ import Icon from "~/components/ui/icon.tsx";
 import {A} from "@solidjs/router";
 
 
+
 const Steps: Component<{}> = props => {
 
     const [getHideHeader, setHideHeader] = createSignal(false);
