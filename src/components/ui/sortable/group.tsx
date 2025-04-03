@@ -65,21 +65,16 @@ const Group: VoidComponent<{
 
     const [getSizes, setSizes] = createSignal<number[]>([0])
 
-    const [getFillSize, setFillSize] = createSignal(0)
-
     const sizes = createMemo(() => {
-        console.log(getSizes())
-
         return getSizes()
     })
 
     const filtered = createMemo(() => items().filter((item) => item.active === true))
 
-    createEffect(() => console.log("filtered", filtered(), getSizes(), sizes(), getFillSize()))
+   // createEffect(() => console.log("filtered", filtered(), getSizes(), sizes()))
 
-    const handleSizes = (any: any) => {
-        console.log(any)
-    }
+
+
 
     return (
         <>

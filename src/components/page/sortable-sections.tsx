@@ -36,6 +36,7 @@ const sortByOrder = (entities: Entity[]) => {
         if(!item)return;
         return ({order: new Big(item.order), item})
     });
+    if(!sorted)return;
     sorted.sort((a, b) => a.order.cmp(b.order));
     return sorted.map((entry) => entry.item);
 };
