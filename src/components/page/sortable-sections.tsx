@@ -279,7 +279,7 @@ export const SortableSections: Component<{
         <>
 
 
-            <div class="flex flex-col flex-1 mt-5 self-stretch">
+            <div class="flex flex-col flex-1 self-stretch">
                 <DragDropProvider
                     onDragOver={onDragOver}
                     onDragEnd={onDragEnd}
