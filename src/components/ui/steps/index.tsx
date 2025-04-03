@@ -6,6 +6,7 @@ import {SortableSections} from "~/components/page/sortable-sections.tsx";
 import {Dynamic} from "solid-js/web";
 import {classNames} from "~/lib/utils.ts";
 import Icon from "~/components/ui/icon.tsx";
+import {A} from "@solidjs/router";
 
 
 const Steps: Component<{}> = props => {
@@ -33,8 +34,27 @@ const Steps: Component<{}> = props => {
                         Layout
                     </p>
 
-                    <ul class="flex items-baseline space-x-1">
-
+                    <ul class="flex items-baseline space-x-3">
+                        <li>
+                            <A
+                                href={"/design/page"}
+                                type="button"
+                                class={classNames(
+                                    getHideHeader() ? "bg-gray-200 text-blue-500/20" : " text-blue-500 border border-blue-500",
+                                    "flex items-center justify-center size-7 text-blue-500 transition rounded-full hover:bg-gray-500/5 focus:bg-blue-500/10 focus:outline-none")}>
+                                <Icon name="House" class="p-1 size-7"/>
+                            </A>
+                        </li>
+                        <li>
+                            <A
+                                href={"/design/page/1"}
+                                type="button"
+                                class={classNames(
+                                    getHideHeader() ? "bg-gray-200 text-blue-500/20" : " text-blue-500 border border-blue-500",
+                                    "flex items-center justify-center size-7 text-blue-500 transition rounded-full hover:bg-gray-500/5 focus:bg-blue-500/10 focus:outline-none")}>
+                                <Icon name="LayoutGrid" class="p-1 size-7"/>
+                            </A>
+                        </li>
                         <li>
                             <button
                                 onClick={() => setHideHeader((p) => !p)}

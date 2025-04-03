@@ -1,0 +1,23 @@
+[
+  {
+    "id": 101,
+    "name": "101",
+    "group": 1,
+    "type": "item",
+    "active": true
+  },
+  {
+    "id": 201,
+    "name": "201",
+    "group": 2,
+    "type": "item",
+    "active": true
+  },
+  {
+    "id": 202,
+    "name": "202",
+    "group": 2,
+    "type": "item",
+    "active": true
+  }
+]

@@ -19,7 +19,7 @@ import Dialog, {Close} from '@corvu/dialog'
 import {Group, GroupOverlay} from "~/components/ui/sortable/group";
 import {Item, ItemOverlay} from "~/components/ui/sortable/item";
 import {Entity, ORDER_DELTA} from "~/lib/types";
-
+import Resizable from '@corvu/resizable'
 
 declare module "solid-js" {
     namespace JSX {
@@ -73,8 +73,6 @@ export const SortableSections: Component<{
             order: getNextOrder(),
             active: true
         });
-
-        console.log(entities)
     };
 
     const setup = () => {
@@ -106,7 +104,6 @@ export const SortableSections: Component<{
             )
         ) as Item[];
 
-        console.log(gi)
         return gi;
     }
 
@@ -274,11 +271,6 @@ export const SortableSections: Component<{
     }
 
 
-    createEffect(() => {
-        console.log(entities)
-
-    })
-
     return (
         <>
 
@@ -298,8 +290,11 @@ export const SortableSections: Component<{
                             "flex flex-col"
                         )}>
                         <SortableProvider ids={groupIds()}>
+
                             <For<Group[]> each={groups()}>
                                 {(group, index) => (
+                                    <>
+
                                     <Group
                                         id={group.id}
                                         name={group.name}
@@ -309,8 +304,11 @@ export const SortableSections: Component<{
                                         removeItem={handleRemoveItem}
                                         hideHeader={hideHeader()}
                                     />
+
+                                    </>
                                 )}
                             </For>
+
                         </SortableProvider>
 
                         <Show<boolean> when={!hideHeader()}>

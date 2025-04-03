@@ -5,7 +5,7 @@ import {classNames} from "~/lib/utils";
 import Icon from "~/components/ui/icon";
 import Dialog from "@corvu/dialog";
 import {Item,ItemOverlay} from "~/components/ui/sortable/item";
-
+import Resizable from '@corvu/resizable'
 
 const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]; hideHeader?: boolean; addItem: (e: any) => any; removeItem: (e: any) => any }> = (
     props
@@ -21,15 +21,12 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
     const hideHeader = () => props.hideHeader ?? false;
 
-
-
     const [getSelectedId, setSelectedId] = createSignal<Id>(0)
 
-    const isSelected = createSelector<Id>(getSelectedId)
+    const selectedId = createMemo(() => getSelectedId())
 
-    const selectItem = (id: Id) => {
-        setSelectedId(id)
-    }
+    const isSelected = createSelector<Id>(selectedId)
+
 
     const removeItem = (id: Id) => {
         setSelectedId(id)
@@ -63,11 +60,6 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
 
 
 
-    createEffect(() => {
-        console.log("props.items", props.items)
-        console.log(items())
-        console.log(getSelectedId())
-    })
 
     return (
         <>
@@ -78,17 +70,34 @@ const Group: VoidComponent<{ id: Id; name: string; title?: string; items: Item[]
                 class={
                     classNames(
                         hideHeader() ? "" : "rounded-lg border border-gray-300",
-                        "overflow-hidden")}
+                        "overflow-hidden h-full")}
             >
-                <div class="flex justify-center items-center">
-                    <SortableProvider ids={sortedItemIds()}>
+                <div class="flex justify-center items-center h-full min-w-full">
+                    <SortableProvider ids={sortedItemIds()} class="size-full">
+                    <Resizable class="min-w-full h-full" orientation="horizontal">
                         <For<Item[]> each={items().filter((item) => item.active === true)}>
-                            {(item) => (
+                            {(item, index) => (
+                                <>
+                                    <Resizable.Panel
+                                        initialSize={1 / items().length}
+                                        class="rounded-lg bg-corvu-100 w-full"
+                                    >
                                 <Item id={item.id} name={item.name} group={item.group}
                                       remove={() => removeItem(item.id)}
                                       hideHeader={hideHeader()}/>
+                                </Resizable.Panel>
+                                    <Show<boolean> when={items().length - 1 !== index()}>
+                                    <Resizable.Handle
+                                        aria-label="Resize Handle"
+                                        class="group basis-1 px-0.5"
+                                    >
+                                        <div class="size-full rounded-sm transition-colors group-data-active:bg-corvu-300 group-data-dragging:bg-corvu-100" />
+                                    </Resizable.Handle>
+                                    </Show>
+                                </>
                             )}
                         </For>
+                        </Resizable>
                     </SortableProvider>
                 </div>
                 <Show<boolean> when={!hideHeader()}>
